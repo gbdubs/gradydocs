@@ -1,59 +1,48 @@
-
-
 $(document).ready(function(){
-
-
-
-
-	var cursor = 1;
-	var cursorElement = getChunkElement(cursor);
-
-	function getChunkElement(n){
-		return $("#chunk-"+n)[0];
-	}
-
-	function changeCursorPositionTo(newCursorElement){
-
-
-		$(getChunkElement(cursor)).removeClass("listening");
-		cursor = parseInt($(newCursorElement).attr('id').substring(6));
-		$(newCursorElement).addClass("listening");
-	}
-
-	function changeCursorPositionToId(id){
-		changeCursorPositionTo(getChunkElement(id));
-	}
-
-	
 
 	var firstChunk = createChunk(1);
 	firstChunk.content = "A";
-	var firstChunkElement = firstChunk.createElement()
+	var firstChunkElement = firstChunk.createElement();
 	$("#chunks").append(firstChunkElement);
-	changeCursorPositionToId(1);
+	firstChunk.element = $("#chunk-1")[0];
+
+	var cursor = {
+		cursorId: 1,
+		location: 1,
+		element: firstChunk.element,
+		move: function(id){
+			$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
+			this.location = id;
+			this.element = CHUNKS[this.location].element;
+			$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
+		}
+	}
 
 	var CHUNKID = 2;
+	
+	function createNewChunk(char){
+		var newChunk = createChunk(CHUNKID++, cursor.location);
+		var id = newChunk.id;
+		newChunk.content = char;
+		var newElement = newChunk.createElement();
+		$(cursor.element).after(newElement);
+		newChunk.element = $("#chunk-" + id)[0];
+		$(newChunk.element).click(function(){
+			cursor.move(id);
+		});
+		cursor.move(id);
+	}
 
 	function addCharacterToDocument(char){
-		var newCharacter = String.fromCharCode(char);
-		var newChunk = createChunk(CHUNKID++, cursor);
-		newChunk.content = newCharacter;
-		var cursorElement = getChunkElement(cursor);
-		var newElement = newChunk.createElement();
-		$(cursorElement).after(newElement);
-		$(getChunkElement(newChunk.id)).click(function(){
-			changeCursorPositionTo(this);
-		});
-		changeCursorPositionToId(newChunk.id);
-		cursor = newChunk.id;
+		createNewChunk(String.fromCharCode(char));
 	}
 
 	function removeCharacterFromDocument(){
-		var previous = CHUNKS[cursor].previousChunk;
-		var element = getChunkElement(cursor);
-		deleteChunk(cursor);
+		var previous = CHUNKS[cursor.location].previousChunk;
+		var element = cursor.element;
+		deleteChunk(cursor.location);
 		element.remove();
-		changeCursorPositionToId(previous);
+		cursor.move(previous);
 	}
 
 	$(window).keydown(function(e){
@@ -65,8 +54,6 @@ $(document).ready(function(){
 		} else if (e.which == 9){
 			addCharacterToDocument(9);
 			e.preventDefault();
-		} else if (e.which == 37){
-
 		}
 	});
 	$(window).keypress(function(e){
