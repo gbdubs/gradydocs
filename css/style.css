@@ -1,6 +1,6 @@
 .chunk {
 	font-family: 'Serif';
-	white-space: pre-line;
+	white-space: pre-wrap;
 }
 
 .chunk.listening{

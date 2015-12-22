@@ -4,48 +4,59 @@ $(document).ready(function(){
 
 	var cursors = {};
 
+	function createCursor(newId){
+		cursors[newId] = {
+			cursorId: newId,
+			location: -1,
+			element: undefined,
+			move: function(id, muteLog){
+				if (this.element != undefined){
+					$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
+				}
+				this.location = id;
+				this.element = CHUNKS[this.location].element;
+				$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
+				if (muteLog){
+					SEND_CURSOR_CHANGE(this.cursorId, this.location);
+				}	
+			},
+			left: function(){
+				var newId = CHUNKS[this.location].previousChunk;
+				if (newId != undefined && newId != -1){
+					this.move(newId);
+				}
+			},
+			right: function(){
+				var newId = CHUNKS[this.location].nextChunk;
+				if (newId != undefined){
+					this.move(newId);
+				}
+			}
+		};
+		return cursors[newId];
+	}
+
+	OPERATIONS["cursorChange"] = function(cursorId, newLocation){
+		cursors[cursorId].move(newLocation, false);
+	}
+
 	var firstChunk = createChunk(1);
 	firstChunk.content = "";
 	var firstChunkElement = firstChunk.createElement();
 	$("#chunks").append(firstChunkElement);
 	firstChunk.element = $("#chunk-1")[0];
 
-	var cursor = {
-		cursorId: 1,
-		location: -1,
-		element: undefined,
-		move: function(id, muteLog){
-			if (this.element != undefined){
-				$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
-			}
-			this.location = id;
-			this.element = CHUNKS[this.location].element;
-			$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
-			if (muteLog){
-				SEND_CURSOR_CHANGE(this.cursorId, this.location);
-			}	
-		},
-		left: function(){
-			var newId = CHUNKS[this.location].previousChunk;
-			if (newId != undefined && newId != -1){
-				this.move(newId);
-			}
-		},
-		right: function(){
-			var newId = CHUNKS[this.location].nextChunk;
-			if (newId != undefined){
-				this.move(newId);
-			}
+	
+	var cursor = createCursor(1);
+	cursor.move(1);
+
+	function changeCursor(id){
+		cursor = cursors[id];
+		if (cursor == undefined){
+			cursor = createCursor(id);
+			cursor.move(1);
 		}
 	}
-
-	cursors[1] = cursor;
-
-	OPERATIONS["cursorChange"] = function(cursorId, newLocation){
-		cursors[cursorId].move(newLocation, false);
-	}
-
-	cursor.move(1);
 
 
 	var CHUNKID = 2;
@@ -130,6 +141,8 @@ $(document).ready(function(){
 			cursor.left();
 		} else if (e.which == 39){
 			cursor.right();
+		} else if (e.which == 27){
+			changeCursor(cursor.cursorId + 1);
 		}
 	});
 	$(window).keypress(function(e){
