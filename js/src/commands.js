@@ -38,7 +38,6 @@ function createChunk (newId, previousChunkId) {
 		content: "",
 		previousChunk: undefined,
 		nextChunk: undefined,
-		changeSinceLastRender: true,
 		createElement: function(){
 			return "<span class=\"chunk\" id=\"chunk-" + this.id + "\">"+this.content+"</span>"
 		}
@@ -94,52 +93,38 @@ function deleteChunk (chunkId) {
 	delete CHUNKS[chunkId];
 }
 
-/*
-function INTERNALCHANGE (commandType, chunkId, location, value, optArgs) {
-	executeCommand(commandType, chunkId, location, value, optArgs);
-	sendCommand(commandType, chunkId, location, value, optArgs);
-}
-
-function EXTERNALCHANGE (commandType, chunkId, location, value, optArgs) {
-	executeCommand(commandType, chunkId, location, value, optArgs);
-}
-
-function executeCommand(commandType, chunkId, location, value, optArgs) {
-	var chunk = CHUNKS[chunkId];
-	if (commandInsert(commandType)){
-		chunk.value = chunk.value.splice(0, location) + value + chunk.value.splice(location);
-	} else if (commandIsDelete(commandType)) {
-		chunk.value = chunk.value.splice(0, location) + chunk.value.splice(location + value);
-	} else if (commandIsCreateChunk(commandType)) {
-		var previousChunkId = chunkId;
-		var newId = optArgs["newId"];
-		if (newId === undefined){
-			throw 'Chunk not provided!';
-		}
-		createChunk(newId, previousChunkId);
-	} else if (commandIsSplitChunk(commandType)) {
-
-	} else if (commandIsMergeChunk(commandType)) {
-
-	} else if (commandIsDeleteChunk(commandType)) {
-
-	} else {
-		throw 'UNSUPPORTED [' + commandType + '].';
-	}
-}
-
-function sendCommand(commandType, chunkId, location, value, optArgs) {
-	var result = {
-		commandType: commandType,
-		chunkId: chunkId,
-		location: location,
-		value: value,
-		optArgs: optArgs
+function SEND ( commandType, args ){
+	var message = {
+		commandType: commandType
 	};
+	for (arg in args){
+		message[arg] = args[arg];
+	}
+	console.log(JSON.stringify(message));
+	return message;
+}
 
-	console.log(JSON.stringify(result));
+function SEND_INSERT ( afterChunk , content , newChunkId) {
+	SEND (commandInsert(), {afterChunk: afterChunk, content: content, newChunkId: newChunkId});
+}
 
-	return result;
+function SEND_DELETE ( chunkDeleted ) {
+	SEND (commandDelete(), {chunkDeleted: chunkDeleted});
+}
+
+function SEND_CURSOR_CHANGE ( cursorId, newLocation ) {
+	SEND (commandMoveCursor(), { cursorId: cursorId, newLocation: newLocation });
+}
+
+function PROCESS ( args ) {
+	var commandType = args["commandType"];
+	if (commandIsInsert(commandType)){
+		OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
+	} else if (commandIsDelete(commandType)){
+		OPERATIONS.delete(args.chunkDeleted);
+	} else if (commandIsMoveCursor(commandType)){
+		OPERATIONS.cursorChange(args.cursorId, args.newLocation);
+	}
 }
 
 function commandInsert() { return 1; }
@@ -162,5 +147,3 @@ function commandIsDeleteChunk(commandType) { return (commandType == 6); }
 
 function commandMoveCursor() { return 7; }
 function commandIsMoveCursor(commandType) { return (commandType == 7); }
-
-*/

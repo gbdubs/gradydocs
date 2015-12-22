@@ -1,4 +1,8 @@
+var OPERATIONS = {};
+
 $(document).ready(function(){
+
+	var cursors = {};
 
 	var firstChunk = createChunk(1);
 	firstChunk.content = "";
@@ -10,13 +14,16 @@ $(document).ready(function(){
 		cursorId: 1,
 		location: -1,
 		element: undefined,
-		move: function(id){
+		move: function(id, muteLog){
 			if (this.element != undefined){
 				$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
 			}
 			this.location = id;
 			this.element = CHUNKS[this.location].element;
 			$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
+			if (muteLog){
+				SEND_CURSOR_CHANGE(this.cursorId, this.location);
+			}	
 		},
 		left: function(){
 			var newId = CHUNKS[this.location].previousChunk;
@@ -32,11 +39,31 @@ $(document).ready(function(){
 		}
 	}
 
+	cursors[1] = cursor;
+
+	OPERATIONS["cursorChange"] = function(cursorId, newLocation){
+		cursors[cursorId].move(newLocation, false);
+	}
+
 	cursor.move(1);
 
 
 	var CHUNKID = 2;
 	
+	function insertNewChunk(afterChunk, char, newChunkId){
+		var newChunk = createChunk(newChunkId, afterChunk);
+		newChunk.placeholder = (char == '');
+		newChunk.content = char;
+		var id = newChunk.id;
+		var newElement = newChunk.createElement();
+		$(CHUNKS[afterChunk].element).after(newElement);
+		$(newChunk.element).click(function(){
+			cursor.move(id);
+		});
+	}
+
+	OPERATIONS["insert"] = insertNewChunk;
+
 	function createNewChunk(char){
 		var newChunk = createChunk(CHUNKID++, cursor.location);
 		newChunk.placeholder = (char == '');
@@ -48,6 +75,7 @@ $(document).ready(function(){
 		$(newChunk.element).click(function(){
 			cursor.move(id);
 		});
+		SEND_INSERT(cursor.location, char, id);
 		cursor.move(id);
 	}
 
@@ -59,6 +87,20 @@ $(document).ready(function(){
 		}
 	}
 
+	function removeChunkFromDocument(chunkId){
+		var chunk = CHUNKS[chunkId];
+		var prev = chunk.previousChunk;
+		var isPlaceholder = chunk.placeholder;
+		var element = chunk.element;
+		deleteChunk(chunk.id);
+		element.remove();
+		if (isPlaceholder){
+			removeChunkFromDocument(prev);
+		}
+	}
+
+	OPERATIONS["delete"] = removeChunkFromDocument;
+
 	function removeCharacterFromDocument(){
 		if (cursor.location != 1){
 			var isPlaceholder = CHUNKS[cursor.location].placeholder;
@@ -66,6 +108,7 @@ $(document).ready(function(){
 			var element = cursor.element;
 			deleteChunk(cursor.location);
 			element.remove();
+			SEND_DELETE(cursor.location);
 			cursor.move(previous);
 			if (isPlaceholder){
 				removeCharacterFromDocument();
