@@ -70,28 +70,28 @@ function createChunk (newId, previousChunkId) {
 
 	return chunk.id;
 }
-/*
+
 function deleteChunk (chunkId) {
 	var chunk = CHUNKS[chunkId];
-	if (chunk === undefined){
+	if (chunk == undefined){
 		throw "The chunk with id [" + chunkId + "] does not exist.";
 	}
 
 	var prev = CHUNKS[chunk.previousChunk];
 	var next = CHUNKS[chunk.nextChunk];
 
-	if (prev !== undefined && next === undefined){
+	if (prev != undefined && next == undefined){
 		prev.nextChunk = undefined;
-	} else if (prev === undefined && next !== undefined){
+	} else if (prev == undefined && next != undefined){
 		FIRST_CHUNK_ID = next.id;
-	} else if (prev !== undefined && next !== undefined){
+	} else if (prev != undefined && next != undefined){
 		prev.nextChunk = next.id;
 		next.previousChunk = prev.id;
 	}
 	delete CHUNKS[chunkId];
 }
 
-
+/*
 function INTERNALCHANGE (commandType, chunkId, location, value, optArgs) {
 	executeCommand(commandType, chunkId, location, value, optArgs);
 	sendCommand(commandType, chunkId, location, value, optArgs);
