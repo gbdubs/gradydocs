@@ -8,7 +8,7 @@ $(document).ready(function(){
 
 	var cursors = {};
 
-	function changeCursor(id){
+	function toggleCursor(id){
 		cursor = cursors[id];
 		if (cursor == undefined){
 			cursor = createCursor(id);
@@ -163,7 +163,7 @@ $(document).ready(function(){
 		SEND(data);
 	}
 
-	function removeChunkFromDocument(chunkId){
+	function removeChunk(chunkId){
 		var chunk = CHUNKS[chunkId];
 		var prev = chunk.previousChunk;
 		for (var curs in cursors){
@@ -175,28 +175,25 @@ $(document).ready(function(){
 		var element = chunk.element;
 		deleteChunk(chunk.id);
 		element.remove();
-		if (isPlaceholder){
-			removeChunkFromDocument(prev);
-		}
 	}
 
-	OPERATIONS["delete"] = removeChunkFromDocument;
+	OPERATIONS["delete"] = removeChunk;
 
-	function removeCharacterFromDocument(){
+	function removeChunkLocally(){
 		if (cursor.location != 1){
+			
 			var isPlaceholder = CHUNKS[cursor.location].placeholder;
-			var previous = CHUNKS[cursor.location].previousChunk;
-			var element = cursor.element;
-			var location = cursor.location;
-			for (var curs in cursors){
-				if ($(element).hasClass("listening-"+curs)){
-					cursors[curs].place(previous);
-				}
-			}	
-			deleteChunk(location);
-			element.remove();
+			
+			var data = {
+				commandType: commandDelete(),
+				chunkDeleted: cursor.location
+			};
+
+			PROCESS(data);
+			SEND(data);
+			
 			if (isPlaceholder){
-				removeCharacterFromDocument();
+				removeChunkLocally();
 			}
 		}
 	}
@@ -204,8 +201,7 @@ $(document).ready(function(){
 	$(window).keydown(function(e){
 		var c = e.which;
 		if (c == 8) {
-			console.log("DELETION");
-			removeCharacterFromDocument();
+			removeChunkLocally();
 			e.preventDefault();
 		} else if (c == 13){
 			createNewChunkLocally(13);
@@ -223,7 +219,7 @@ $(document).ready(function(){
 		} else if (c == 40){
 			cursor.down();
 		} else if (c == 27){
-			changeCursor(cursor.cursorId%5+1);
+			toggleCursor(cursor.cursorId%5+1);
 		}
 	});
 
