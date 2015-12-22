@@ -38,7 +38,10 @@ function createChunk (newId, previousChunkId) {
 		content: "",
 		previousChunk: undefined,
 		nextChunk: undefined,
-		changeSinceLastRender: true
+		changeSinceLastRender: true,
+		createElement: function(){
+			return "<span class=\"chunk\" id=\"chunk-" + this.id + "\">"+this.content+"</span>"
+		}
 	};
 
 	CHUNKS[chunk.id] = chunk;
@@ -50,7 +53,7 @@ function createChunk (newId, previousChunkId) {
 		if (CHUNKS[oldFirstChunk] != undefined){
 			CHUNKS[oldFirstChunk].previousChunk = chunk.id;
 		}
-		return chunk.id;
+		return chunk;
 	}
 
 	var prevChunk = CHUNKS[previousChunkId];
@@ -68,7 +71,7 @@ function createChunk (newId, previousChunkId) {
 		chunk.nextChunk = next.id;
 	}
 
-	return chunk.id;
+	return chunk;
 }
 
 function deleteChunk (chunkId) {
@@ -138,10 +141,6 @@ function sendCommand(commandType, chunkId, location, value, optArgs) {
 
 	return result;
 }
-
-
-
-
 
 function commandInsert() { return 1; }
 function commandIsInsert(commandType) { return (commandType == 1); }
