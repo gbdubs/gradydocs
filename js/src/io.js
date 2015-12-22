@@ -12,7 +12,7 @@ $(document).ready(function(){
 		cursor = cursors[id];
 		if (cursor == undefined){
 			cursor = createCursor(id);
-			cursor.move(1);
+			cursor.place(1);
 		}
 	}
 
@@ -21,7 +21,16 @@ $(document).ready(function(){
 			cursorId: newId,
 			location: -1,
 			element: undefined,
-			move: function(id, muteLog){
+			place: function(id){
+				var data = {
+					commandType: commandMoveCursor(),
+					cursorId: this.cursorId,
+					newLocation: id
+				};
+				PROCESS(data);
+				SEND(data);
+			},
+			move: function(id){
 				if (this.element != undefined){
 					$(this.element).removeClass("listening-"+this.cursorId);
 				}
@@ -35,7 +44,7 @@ $(document).ready(function(){
 					if (CHUNKS[newId].placeholder){
 						newId = CHUNKS[newId].previousChunk;
 					}
-					this.move(newId);
+					this.place(newId);
 				}
 			},
 			right: function(){
@@ -44,7 +53,7 @@ $(document).ready(function(){
 					if (CHUNKS[newId].placeholder){
 						newId = CHUNKS[newId].nextChunk;
 					}
-					this.move(newId);
+					this.place(newId);
 				}
 			},
 			up: function(){
@@ -53,13 +62,13 @@ $(document).ready(function(){
 				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = CHUNKS[c.previousChunk]; }
 				if (c == undefined){ return; }
 				if (c.previousChunk == undefined){
-					this.move(c.id);
+					this.place(c.id);
 					return;
 				}
 				c = CHUNKS[c.previousChunk];
 				while (c != undefined && c.content != '\r'){
 					if ($(c.element).position().left <= leftCoord){
-						this.move(c.id);
+						this.place(c.id);
 						return;
 					}
 					c = CHUNKS[c.previousChunk];
@@ -71,19 +80,19 @@ $(document).ready(function(){
 				while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = CHUNKS[c.nextChunk]; }
 				if (c == undefined){ return; }
 				if (c.nextChunk == undefined){
-					this.move(c.id);
+					this.place(c.id);
 					return;
 				}
 				c = CHUNKS[c.nextChunk];
 				while (c != undefined && c.content != '\r' && c.nextChunk != undefined){
 					if ($(c.element).position().left >= leftCoord){
-						this.move(c.id);
+						this.place(c.id);
 						return;
 					}
 					c = CHUNKS[c.nextChunk];
 				}
 				if (c != undefined){
-					this.move(c.id);
+					this.place(c.id);
 					return;
 				}
 
@@ -93,7 +102,7 @@ $(document).ready(function(){
 	}
 
 	OPERATIONS["moveCursor"] = function(cursorId, newLocation){
-		cursors[cursorId].move(newLocation, false);
+		cursors[cursorId].move(newLocation);
 	}
 
 	/* * * * * * *\
@@ -113,7 +122,7 @@ $(document).ready(function(){
 	//SETUP
 	OPERATIONS.createAnchor();
 	var cursor = createCursor(1);
-	cursor.move(1);
+	cursor.place(1);
 	var CHUNKID = 2;
 	
 
@@ -126,7 +135,7 @@ $(document).ready(function(){
 		$(CHUNKS[afterChunk].element).after(newElement);
 		newChunk.element = $("#chunk-" + id)[0];
 		$(newChunk.element).click(function(){
-			cursor.move(id);
+			cursor.place(id);
 		});
 		return id;
 	}
@@ -142,13 +151,15 @@ $(document).ready(function(){
 			character = String.fromCharCode(charCode);
 		}
 
-		var newChunkId = PROCESS({
+		var data = {
 			commandType: commandInsert(),
 			afterChunk: cursor.location,
 			content: character,
 			newChunkId: CHUNKID++
-		});
-		cursor.move(newChunkId);
+		}
+
+		var newChunkId = PROCESS(data);
+		cursor.place(newChunkId);
 		SEND(data);
 	}
 
@@ -157,7 +168,7 @@ $(document).ready(function(){
 		var prev = chunk.previousChunk;
 		for (var curs in cursors){
 			if ($(chunk.element).hasClass("listening-"+curs)){
-				cursors[curs].move(prev);
+				cursors[curs].place(prev);
 			}
 		}		
 		var isPlaceholder = chunk.placeholder;
@@ -179,12 +190,11 @@ $(document).ready(function(){
 			var location = cursor.location;
 			for (var curs in cursors){
 				if ($(element).hasClass("listening-"+curs)){
-					cursors[curs].move(previous);
+					cursors[curs].place(previous);
 				}
 			}	
 			deleteChunk(location);
 			element.remove();
-			SEND_DELETE(location);
 			if (isPlaceholder){
 				removeCharacterFromDocument();
 			}
@@ -194,6 +204,7 @@ $(document).ready(function(){
 	$(window).keydown(function(e){
 		var c = e.which;
 		if (c == 8) {
+			console.log("DELETION");
 			removeCharacterFromDocument();
 			e.preventDefault();
 		} else if (c == 13){
@@ -220,6 +231,9 @@ $(document).ready(function(){
 		var c = e.which;
 		if (c >= 32 && c <= 126){
 			createNewChunkLocally(c);
+		}
+		if (c == 8){
+			e.preventDefault();
 		}
 	});
 });

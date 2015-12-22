@@ -104,7 +104,7 @@ function PROCESS ( args ) {
 	} else if (commandIsDelete(commandType)){
 		OPERATIONS.delete(args.chunkDeleted);
 	} else if (commandIsMoveCursor(commandType)){
-		OPERATIONS.cursorChange(args.cursorId, args.newLocation);
+		OPERATIONS.moveCursor(args.cursorId, args.newLocation);
 	}
 }
 
