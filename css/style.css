@@ -1,8 +1,31 @@
 .chunk {
 	font-family: 'Serif';
-	white-space: pre-wrap;
+	white-space: pre-line;
 }
 
-.chunk.listening {
-	border-right: 2px solid black;
+.chunk.listening{
+	position: relative;
+    padding-right: 2px;
+}
+
+.chunk.listening:after {
+	content: "";
+    position: absolute;
+    display: inline-block;
+    height: 19px;
+    border-right: 2px solid;
+    bottom: 0px;
+}
+
+/*.chunk.listening:before {
+    content: '';
+    position: absolute;
+    border: 2px solid;
+    bottom: 17px;
+    right: -1px;
+}
+*/
+.chunk.listening.listening-1:after,
+.chunk.listening.listening-1:before{
+	color: red;
 }

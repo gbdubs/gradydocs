@@ -39,6 +39,7 @@ $(document).ready(function(){
 	
 	function createNewChunk(char){
 		var newChunk = createChunk(CHUNKID++, cursor.location);
+		newChunk.placeholder = (char == '');
 		var id = newChunk.id;
 		newChunk.content = char;
 		var newElement = newChunk.createElement();
@@ -51,16 +52,24 @@ $(document).ready(function(){
 	}
 
 	function addCharacterToDocument(char){
-		createNewChunk(String.fromCharCode(char));
+		if (char == -1){
+			createNewChunk('');
+		} else {
+			createNewChunk(String.fromCharCode(char));
+		}
 	}
 
 	function removeCharacterFromDocument(){
 		if (cursor.location != 1){
+			var isPlaceholder = CHUNKS[cursor.location].placeholder;
 			var previous = CHUNKS[cursor.location].previousChunk;
 			var element = cursor.element;
 			deleteChunk(cursor.location);
 			element.remove();
 			cursor.move(previous);
+			if (isPlaceholder){
+				removeCharacterFromDocument();
+			}
 		}
 	}
 
@@ -69,6 +78,7 @@ $(document).ready(function(){
 			removeCharacterFromDocument();
 		} else if (e.which == 13){
 			addCharacterToDocument(13);
+			addCharacterToDocument(-1);
 			e.preventDefault();
 		} else if (e.which == 9){
 			addCharacterToDocument(9);
