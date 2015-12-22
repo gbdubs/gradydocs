@@ -15,6 +15,18 @@ $(document).ready(function(){
 			this.location = id;
 			this.element = CHUNKS[this.location].element;
 			$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
+		},
+		left: function(){
+			var newId = CHUNKS[this.location].previousChunk;
+			if (newId != undefined){
+				this.move(newId);
+			}
+		},
+		right: function(){
+			var newId = CHUNKS[this.location].nextChunk;
+			if (newId != undefined){
+				this.move(newId);
+			}
 		}
 	}
 
@@ -54,6 +66,10 @@ $(document).ready(function(){
 		} else if (e.which == 9){
 			addCharacterToDocument(9);
 			e.preventDefault();
+		} else if (e.which == 37){
+			cursor.left();
+		} else if (e.which == 39){
+			cursor.right();
 		}
 	});
 	$(window).keypress(function(e){
