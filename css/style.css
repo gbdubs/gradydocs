@@ -1,9 +1,8 @@
 .chunk {
 	font-family: 'Serif';
+	white-space: pre-wrap;
 }
 
 .chunk.listening {
 	border-right: 2px solid black;
-	margin-right: 2px;
-	padding-right: 2px;
 }
