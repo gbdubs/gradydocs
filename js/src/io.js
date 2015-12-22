@@ -2,7 +2,19 @@ var OPERATIONS = {};
 
 $(document).ready(function(){
 
+	/* * * * * * *\
+	    CURSORS
+	\* * * * * * */
+
 	var cursors = {};
+
+	function changeCursor(id){
+		cursor = cursors[id];
+		if (cursor == undefined){
+			cursor = createCursor(id);
+			cursor.move(1);
+		}
+	}
 
 	function createCursor(newId){
 		cursors[newId] = {
@@ -16,9 +28,6 @@ $(document).ready(function(){
 				this.location = id;
 				this.element = CHUNKS[this.location].element;
 				$(this.element).addClass("listening-"+this.cursorId);
-				if (muteLog == undefined){
-					SEND_CURSOR_CHANGE(this.cursorId, this.location);
-				}
 			},
 			left: function(){
 				var newId = CHUNKS[this.location].previousChunk;
@@ -83,66 +92,64 @@ $(document).ready(function(){
 		return cursors[newId];
 	}
 
-	OPERATIONS["cursorChange"] = function(cursorId, newLocation){
+	OPERATIONS["moveCursor"] = function(cursorId, newLocation){
 		cursors[cursorId].move(newLocation, false);
 	}
 
-	var firstChunk = createChunk(1);
-	firstChunk.content = "";
-	var firstChunkElement = firstChunk.createElement();
-	$("#chunks").append(firstChunkElement);
-	firstChunk.element = $("#chunk-1")[0];
+	/* * * * * * *\
+	  ANCHORCHUNK 
+	\* * * * * * */
 
-	
+	function createAnchor(){
+		var achoringChunk = createChunk(1);
+		achoringChunk.content = "";
+		var achoringChunkElement = achoringChunk.createElement();
+		$("#chunks").append(achoringChunkElement);
+		achoringChunk.element = $("#chunk-1")[0];
+	}
+
+	OPERATIONS["createAnchor"] = createAnchor;
+
+	//SETUP
+	OPERATIONS.createAnchor();
 	var cursor = createCursor(1);
 	cursor.move(1);
-
-	function changeCursor(id){
-		cursor = cursors[id];
-		if (cursor == undefined){
-			cursor = createCursor(id);
-			cursor.move(1);
-		}
-	}
-
-
 	var CHUNKID = 2;
 	
-	function insertNewChunk(afterChunk, char, newChunkId){
+
+	function createNewChunk(afterChunk, char, newChunkId){
 		var newChunk = createChunk(newChunkId, afterChunk);
 		newChunk.placeholder = (char == '');
-		newChunk.content = char;
 		var id = newChunk.id;
+		newChunk.content = char;
 		var newElement = newChunk.createElement();
 		$(CHUNKS[afterChunk].element).after(newElement);
-		$(newChunk.element).click(function(){
-			cursor.move(id);
-		});
-	}
-
-	OPERATIONS["insert"] = insertNewChunk;
-
-	function createNewChunk(char){
-		var newChunk = createChunk(CHUNKID++, cursor.location);
-		newChunk.placeholder = (char == '');
-		var id = newChunk.id;
-		newChunk.content = char;
-		var newElement = newChunk.createElement();
-		$(cursor.element).after(newElement);
 		newChunk.element = $("#chunk-" + id)[0];
 		$(newChunk.element).click(function(){
 			cursor.move(id);
 		});
-		SEND_INSERT(cursor.location, char, id);
-		cursor.move(id);
+		return id;
 	}
 
-	function addCharacterToDocument(char){
-		if (char == -1){
-			createNewChunk('');
+	OPERATIONS["insert"] = createNewChunk;
+
+	function createNewChunkLocally(charCode){
+		var character = undefined;
+		
+		if (charCode == -1){
+			character = '';
 		} else {
-			createNewChunk(String.fromCharCode(char));
+			character = String.fromCharCode(charCode);
 		}
+
+		var newChunkId = PROCESS({
+			commandType: commandInsert(),
+			afterChunk: cursor.location,
+			content: character,
+			newChunkId: CHUNKID++
+		});
+		cursor.move(newChunkId);
+		SEND(data);
 	}
 
 	function removeChunkFromDocument(chunkId){
@@ -185,32 +192,34 @@ $(document).ready(function(){
 	}
 
 	$(window).keydown(function(e){
-		if (e.which == 8) {
+		var c = e.which;
+		if (c == 8) {
 			removeCharacterFromDocument();
 			e.preventDefault();
-		} else if (e.which == 13){
-			addCharacterToDocument(13);
-			addCharacterToDocument(-1);
+		} else if (c == 13){
+			createNewChunkLocally(13);
+			createNewChunkLocally(-1);
 			e.preventDefault();
-		} else if (e.which == 9){
-			addCharacterToDocument(9);
+		} else if (c == 9){
+			createNewChunkLocally(9);
 			e.preventDefault();
-		} else if (e.which == 37){
+		} else if (c == 37){
 			cursor.left();
-		} else if (e.which == 39){
+		} else if (c == 39){
 			cursor.right();
-		} else if (e.which == 38){
+		} else if (c == 38){
 			cursor.up();
-		} else if (e.which == 40){
+		} else if (c == 40){
 			cursor.down();
-		} else if (e.which == 27){
+		} else if (c == 27){
 			changeCursor(cursor.cursorId%5+1);
 		}
 	});
+
 	$(window).keypress(function(e){
 		var c = e.which;
 		if (c >= 32 && c <= 126){
-			addCharacterToDocument(c);
+			createNewChunkLocally(c);
 		}
 	});
 });

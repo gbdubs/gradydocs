@@ -93,33 +93,14 @@ function deleteChunk (chunkId) {
 	delete CHUNKS[chunkId];
 }
 
-function SEND ( commandType, args ){
-	var message = {
-		commandType: commandType
-	};
-	for (arg in args){
-		message[arg] = args[arg];
-	}
-	console.log(JSON.stringify(message));
-	return message;
-}
-
-function SEND_INSERT ( afterChunk , content , newChunkId) {
-	SEND (commandInsert(), {afterChunk: afterChunk, content: content, newChunkId: newChunkId});
-}
-
-function SEND_DELETE ( chunkDeleted ) {
-	SEND (commandDelete(), {chunkDeleted: chunkDeleted});
-}
-
-function SEND_CURSOR_CHANGE ( cursorId, newLocation ) {
-	SEND (commandMoveCursor(), { cursorId: cursorId, newLocation: newLocation });
+function SEND ( args ) {
+	console.log(JSON.stringify(args));
 }
 
 function PROCESS ( args ) {
 	var commandType = args["commandType"];
 	if (commandIsInsert(commandType)){
-		OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
+		return OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
 	} else if (commandIsDelete(commandType)){
 		OPERATIONS.delete(args.chunkDeleted);
 	} else if (commandIsMoveCursor(commandType)){
