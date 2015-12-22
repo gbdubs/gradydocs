@@ -1,24 +1,26 @@
 $(document).ready(function(){
 
 	var firstChunk = createChunk(1);
-	firstChunk.content = "A";
+	firstChunk.content = "";
 	var firstChunkElement = firstChunk.createElement();
 	$("#chunks").append(firstChunkElement);
 	firstChunk.element = $("#chunk-1")[0];
 
 	var cursor = {
 		cursorId: 1,
-		location: 1,
-		element: firstChunk.element,
+		location: -1,
+		element: undefined,
 		move: function(id){
-			$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
+			if (this.element != undefined){
+				$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
+			}
 			this.location = id;
 			this.element = CHUNKS[this.location].element;
 			$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
 		},
 		left: function(){
 			var newId = CHUNKS[this.location].previousChunk;
-			if (newId != undefined){
+			if (newId != undefined && newId != -1){
 				this.move(newId);
 			}
 		},
@@ -29,6 +31,9 @@ $(document).ready(function(){
 			}
 		}
 	}
+
+	cursor.move(1);
+
 
 	var CHUNKID = 2;
 	
@@ -50,11 +55,13 @@ $(document).ready(function(){
 	}
 
 	function removeCharacterFromDocument(){
-		var previous = CHUNKS[cursor.location].previousChunk;
-		var element = cursor.element;
-		deleteChunk(cursor.location);
-		element.remove();
-		cursor.move(previous);
+		if (cursor.location != 1){
+			var previous = CHUNKS[cursor.location].previousChunk;
+			var element = cursor.element;
+			deleteChunk(cursor.location);
+			element.remove();
+			cursor.move(previous);
+		}
 	}
 
 	$(window).keydown(function(e){
