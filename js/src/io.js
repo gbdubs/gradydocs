@@ -11,11 +11,11 @@ $(document).ready(function(){
 			element: undefined,
 			move: function(id, muteLog){
 				if (this.element != undefined){
-					$(this.element).removeClass("listening").removeClass("listening-"+this.cursorId);
+					$(this.element).removeClass("listening-"+this.cursorId);
 				}
 				this.location = id;
 				this.element = CHUNKS[this.location].element;
-				$(this.element).addClass("listening").addClass("listening-"+this.cursorId);
+				$(this.element).addClass("listening-"+this.cursorId);
 				if (muteLog){
 					SEND_CURSOR_CHANGE(this.cursorId, this.location);
 				}	
@@ -101,6 +101,11 @@ $(document).ready(function(){
 	function removeChunkFromDocument(chunkId){
 		var chunk = CHUNKS[chunkId];
 		var prev = chunk.previousChunk;
+		for (var curs in cursors){
+			if ($(chunk.element).hasClass("listening-"+curs)){
+				cursors[curs].move(prev);
+			}
+		}		
 		var isPlaceholder = chunk.placeholder;
 		var element = chunk.element;
 		deleteChunk(chunk.id);
@@ -117,10 +122,15 @@ $(document).ready(function(){
 			var isPlaceholder = CHUNKS[cursor.location].placeholder;
 			var previous = CHUNKS[cursor.location].previousChunk;
 			var element = cursor.element;
-			deleteChunk(cursor.location);
+			var location = cursor.location;
+			for (var curs in cursors){
+				if ($(element).hasClass("listening-"+curs)){
+					cursors[curs].move(previous);
+				}
+			}	
+			deleteChunk(location);
 			element.remove();
-			SEND_DELETE(cursor.location);
-			cursor.move(previous);
+			SEND_DELETE(location);
 			if (isPlaceholder){
 				removeCharacterFromDocument();
 			}
@@ -142,7 +152,7 @@ $(document).ready(function(){
 		} else if (e.which == 39){
 			cursor.right();
 		} else if (e.which == 27){
-			changeCursor(cursor.cursorId + 1);
+			changeCursor(cursor.cursorId%5+1);
 		}
 	});
 	$(window).keypress(function(e){
