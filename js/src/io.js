@@ -16,21 +16,68 @@ $(document).ready(function(){
 				this.location = id;
 				this.element = CHUNKS[this.location].element;
 				$(this.element).addClass("listening-"+this.cursorId);
-				if (muteLog){
+				if (muteLog == undefined){
 					SEND_CURSOR_CHANGE(this.cursorId, this.location);
-				}	
+				}
 			},
 			left: function(){
 				var newId = CHUNKS[this.location].previousChunk;
 				if (newId != undefined && newId != -1){
+					if (CHUNKS[newId].placeholder){
+						newId = CHUNKS[newId].previousChunk;
+					}
 					this.move(newId);
 				}
 			},
 			right: function(){
 				var newId = CHUNKS[this.location].nextChunk;
 				if (newId != undefined){
+					if (CHUNKS[newId].placeholder){
+						newId = CHUNKS[newId].nextChunk;
+					}
 					this.move(newId);
 				}
+			},
+			up: function(){
+				var c = CHUNKS[this.location];
+				var leftCoord = $(c.element).position().left;
+				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = CHUNKS[c.previousChunk]; }
+				if (c == undefined){ return; }
+				if (c.previousChunk == undefined){
+					this.move(c.id);
+					return;
+				}
+				c = CHUNKS[c.previousChunk];
+				while (c != undefined && c.content != '\r'){
+					if ($(c.element).position().left <= leftCoord){
+						this.move(c.id);
+						return;
+					}
+					c = CHUNKS[c.previousChunk];
+				}
+			},
+			down: function(){
+				var c = CHUNKS[this.location];
+				var leftCoord = $(c.element).position().left;
+				while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = CHUNKS[c.nextChunk]; }
+				if (c == undefined){ return; }
+				if (c.nextChunk == undefined){
+					this.move(c.id);
+					return;
+				}
+				c = CHUNKS[c.nextChunk];
+				while (c != undefined && c.content != '\r' && c.nextChunk != undefined){
+					if ($(c.element).position().left >= leftCoord){
+						this.move(c.id);
+						return;
+					}
+					c = CHUNKS[c.nextChunk];
+				}
+				if (c != undefined){
+					this.move(c.id);
+					return;
+				}
+
 			}
 		};
 		return cursors[newId];
@@ -140,6 +187,7 @@ $(document).ready(function(){
 	$(window).keydown(function(e){
 		if (e.which == 8) {
 			removeCharacterFromDocument();
+			e.preventDefault();
 		} else if (e.which == 13){
 			addCharacterToDocument(13);
 			addCharacterToDocument(-1);
@@ -151,6 +199,10 @@ $(document).ready(function(){
 			cursor.left();
 		} else if (e.which == 39){
 			cursor.right();
+		} else if (e.which == 38){
+			cursor.up();
+		} else if (e.which == 40){
+			cursor.down();
 		} else if (e.which == 27){
 			changeCursor(cursor.cursorId%5+1);
 		}
