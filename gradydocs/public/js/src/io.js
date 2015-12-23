@@ -132,7 +132,7 @@ $(document).ready(function(){
 			$.get("/catchup-plz", function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
-					PROCESS(listOfData[i]);
+					PROCESS(JSON.parse(listOfData[i]));
 				}
 			});
 		});
