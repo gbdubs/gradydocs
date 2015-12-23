@@ -1,0 +1,65 @@
+.chunk {
+	font-family: 'Serif';
+	white-space: pre-wrap;
+}
+
+.chunk.listening-1,
+.chunk.listening-2,
+.chunk.listening-3,
+.chunk.listening-4,
+.chunk.listening-5 {
+	position: relative;
+    padding-right: 2px;
+}
+
+.chunk.listening-1:after,
+.chunk.listening-2:after,
+.chunk.listening-3:after,
+.chunk.listening-4:after,
+.chunk.listening-5:after {
+	content: "";
+    position: absolute;
+    display: inline-block;
+    height: 19px;
+    border-right: 2px solid;
+    bottom: 0px;
+    border-radius: 1px;
+}
+
+.chunk.listening-1:before,
+.chunk.listening-2:before,
+.chunk.listening-3:before,
+.chunk.listening-4:before,
+.chunk.listening-5:before {
+    /*content: '';*/
+    position: absolute;
+    border: 2px solid;
+    bottom: 17px;
+    right: -1px;
+    border-radius: 1px;
+}
+
+.chunk.listening-1:after,
+.chunk.listening-1:before{
+	color: #9C27B0;
+}
+
+.chunk.listening-2:after,
+.chunk.listening-2:before{
+	color: #FF5722;
+}
+
+.chunk.listening-3:after,
+.chunk.listening-3:before{
+	color: #4CAF50;
+}
+
+.chunk.listening-4:after,
+.chunk.listening-4:before{
+	color: #2196F3;
+}
+
+.chunk.listening-5:after,
+.chunk.listening-5:before{
+	color: #FFEB3B;
+}
