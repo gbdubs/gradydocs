@@ -102,6 +102,9 @@ $(document).ready(function(){
 	}
 
 	OPERATIONS["moveCursor"] = function(cursorId, newLocation){
+		if (cursors[cursorId] == undefined){
+			cursors[cursorId] = createCursor(cursorId);
+		}
 		cursors[cursorId].move(newLocation);
 	}
 
@@ -119,9 +122,22 @@ $(document).ready(function(){
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
 
-		cursor = createCursor(1);
-		cursor.place(1);
-		CHUNKID = 2;
+		$.get("/user-number-plz", function(data){
+			var cursorNumber = parseInt(data);
+			console.log(cursorNumber);
+			cursor = createCursor(cursorNumber);
+			cursor.place(1);
+			CHUNKID = 2 + 1000000 * cursorNumber;
+
+			$.get("/catchup-plz", function(data){
+				var listOfData = JSON.parse(data);
+				for (var i in listOfData){
+					PROCESS(listOfData[i]);
+				}
+			});
+		});
+
+
 	}
 
 	OPERATIONS["setup"] = setup;
