@@ -109,22 +109,24 @@ $(document).ready(function(){
 	  ANCHORCHUNK 
 	\* * * * * * */
 
-	function createAnchor(){
+	var cursor = undefined;
+	var CHUNKID = -1;
+
+	function setup(){
 		var achoringChunk = createChunk(1);
 		achoringChunk.content = "";
 		var achoringChunkElement = achoringChunk.createElement();
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
+
+		cursor = createCursor(1);
+		cursor.place(1);
+		CHUNKID = 2;
 	}
 
-	OPERATIONS["createAnchor"] = createAnchor;
+	OPERATIONS["setup"] = setup;
 
-	//SETUP
-	OPERATIONS.createAnchor();
-	var cursor = createCursor(1);
-	cursor.place(1);
-	var CHUNKID = 2;
-	
+	setup();
 
 	function createNewChunk(afterChunk, char, newChunkId){
 		var newChunk = createChunk(newChunkId, afterChunk);
@@ -159,8 +161,8 @@ $(document).ready(function(){
 		}
 
 		var newChunkId = PROCESS(data);
-		cursor.place(newChunkId);
 		SEND(data);
+		cursor.place(newChunkId);
 	}
 
 	function removeChunk(chunkId){

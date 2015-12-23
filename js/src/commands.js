@@ -1,11 +1,11 @@
-var CHUNK_IDS = 1;
 var FIRST_CHUNK_ID = undefined;
 var CHUNKS = {};
 
 function clearState(){
 	CHUNKS = {};
 	FIRST_CHUNK_ID = undefined;
-	CHUNK_IDS = 1;
+	$("#chunks").empty();
+	OPERATIONS.setup();
 }
 
 function getChunkList(){
@@ -93,8 +93,26 @@ function deleteChunk (chunkId) {
 	delete CHUNKS[chunkId];
 }
 
+var RECORDING = true;
+var COMMANDLIST = [];
+
+function ENDRECORD(){
+	RECORDING = false;
+	return COMMANDLIST;
+}
+
+function REPLAY ( argList , speed ){
+	clearState();
+	for (var i in argList){
+		PROCESS(argList[i]);
+	}
+}
+
 function SEND ( args ) {
-	console.log(JSON.stringify(args));
+	if (RECORDING){
+		COMMANDLIST.push(args);
+	}
+	console.log("-->"+JSON.stringify(args));
 }
 
 function PROCESS ( args ) {
@@ -114,17 +132,5 @@ function commandIsInsert(commandType) { return (commandType == 1); }
 function commandDelete() { return 2; }
 function commandIsDelete(commandType) { return (commandType == 2); }
 
-function commandCreateChunk() { return 3; }
-function commandIsCreateChunk(commandType) { return (commandType == 3); }
-
-function commandSplitChunk() { return 4; }
-function commandIsSplitChunk(commandType) { return (commandType == 4); }
-
-function commandMergeChunk() { return 5; }
-function commandIsMergeChunk(commandType) { return (commandType == 5); }
-
-function commandDeleteChunk() { return 6; }
-function commandIsDeleteChunk(commandType) { return (commandType == 6); }
-
-function commandMoveCursor() { return 7; }
-function commandIsMoveCursor(commandType) { return (commandType == 7); }
+function commandMoveCursor() { return 3; }
+function commandIsMoveCursor(commandType) { return (commandType == 3); }
