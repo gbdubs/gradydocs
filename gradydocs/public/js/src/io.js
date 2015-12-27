@@ -7,13 +7,40 @@ $(document).ready(function(){
 	\* * * * * * */
 
 	var cursors = {};
+	var cursor = undefined;
 
-	function toggleCursor(id){
-		cursor = cursors[id];
-		if (cursor == undefined){
-			cursor = createCursor(id);
-			cursor.place(1);
+	var CURSOR_COLORS = [
+		"#000000", // Black
+		"#3F51B5", // Indigo
+		"#4CAF50", // Green
+		"#FFC107", // Amber
+		"#2196F3", // Blue
+		"#FF5722", // Deep Orange
+		"#009688", // Teal
+		"#FFEB3B", // Yellow
+		"#673AB7", // Deep Purple
+		"#F44336", // Red
+		"#9C27B0", // Purple
+		"#CDDC39", // Lime
+		"#E91E63", // Pink
+		"#607D8B"  // Blue Grey
+	];
+
+	function addCursorCssToDocument(cursorId){
+		var color = CURSOR_COLORS[cursorId % CURSOR_COLORS.length];
+		var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
+					'.chunk.listening-'+cursorId+':after { color: '+color+'; content: ""; position: absolute; display: inline-block; height: 19px; border-right: 2px solid; bottom: 0px; border-radius: 1px; }\n'+
+					'.chunk.listening-'+cursorId+':before{ color: '+color+'; position: absolute; border: 2px solid; bottom: 17px; right: -1px; border-radius: 1px; }\n';
+
+		head = document.head || document.getElementsByTagName('head')[0],
+		style = document.createElement('style');
+		style.type = 'text/css';
+		if (style.styleSheet){
+		  style.styleSheet.cssText = css;
+		} else {
+		  style.appendChild(document.createTextNode(css));
 		}
+		head.appendChild(style);
 	}
 
 	function createCursor(newId){
@@ -98,6 +125,7 @@ $(document).ready(function(){
 
 			}
 		};
+		addCursorCssToDocument(newId);
 		return cursors[newId];
 	}
 
@@ -108,11 +136,10 @@ $(document).ready(function(){
 		cursors[cursorId].move(newLocation);
 	}
 
-	/* * * * * * *\
-	  ANCHORCHUNK 
-	\* * * * * * */
+	/* * * * * * * * * * *\
+	  ANCHORCHUNK + SETUP 
+	\* * * * * * * * * * */
 
-	var cursor = undefined;
 	var CHUNKID = -1;
 
 	function setup(){
@@ -136,8 +163,6 @@ $(document).ready(function(){
 				}
 			});
 		});
-
-
 	}
 
 	OPERATIONS["setup"] = setup;
@@ -251,3 +276,14 @@ $(document).ready(function(){
 		}
 	});
 });
+
+/* 
+DEPRECATED
+function toggleCursor(id){
+	cursor = cursors[id];
+	if (cursor == undefined){
+		cursor = createCursor(id);
+		cursor.place(1);
+	}
+}
+*/
