@@ -2,6 +2,9 @@ var OPERATIONS = {};
 
 $(document).ready(function(){
 
+	var currentUrl = window.location.href;
+	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/'));
+
 	/* * * * * * *\
 	    CURSORS
 	\* * * * * * */
@@ -140,9 +143,10 @@ $(document).ready(function(){
 	  ANCHORCHUNK + SETUP 
 	\* * * * * * * * * * */
 
-	var CHUNKID = -1;
-	var currentUrl = window.location.href;
-	var DOC_UUID = currentUrl.substring(currentUrl.lastIndexOf('/'));
+	var FIRST_CHUNK_ID = undefined;
+	var CHUNKS = {};
+	var NEXT_CHUNK_ID = -1;
+	var SOCKET = undefined;
 
 	function setup(){
 		var achoringChunk = createChunk(1);
@@ -151,12 +155,11 @@ $(document).ready(function(){
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
 
-		
 		$.get("/user-number-plz/"+docUuid, function(data){
 			var cursorNumber = parseInt(data);
 			cursor = createCursor(cursorNumber);
 			cursor.place(1);
-			CHUNKID = 2 + 10000000 * cursorNumber;
+			NEXT_CHUNK_ID = 2 + 10000000 * cursorNumber;
 			$.get("/catchup-plz/"+docUuid, function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
@@ -164,11 +167,15 @@ $(document).ready(function(){
 				}
 			});
 		});
+
+		var SOCKET = io('');
+		SOCKET.on('modification', function(msg){
+			console.log("RECIEVED-->"+msg);
+			PROCESS ( JSON.parse(msg) );
+		});
 	}
 
 	OPERATIONS["setup"] = setup;
-
-	setup();
 
 	function createNewChunk(afterChunk, char, newChunkId){
 		var newChunk = createChunk(newChunkId, afterChunk);
@@ -199,12 +206,12 @@ $(document).ready(function(){
 			commandType: commandInsert(),
 			afterChunk: cursor.location,
 			content: character,
-			newChunkId: CHUNKID++
+			newChunkId: NEXT_CHUNK_ID++
 		}
 
-		var newChunkId = PROCESS(data);
+		PROCESS(data);
 		SEND(data);
-		cursor.place(newChunkId);
+		cursor.place(data.newChunkId);
 	}
 
 	function removeChunk(chunkId){
@@ -242,6 +249,98 @@ $(document).ready(function(){
 		}
 	}
 
+	function createChunk (newId, previousChunkId) {
+		var chunk = {
+			id: newId,
+			content: "",
+			previousChunk: undefined,
+			nextChunk: undefined,
+			createElement: function(){
+				return "<span class=\"chunk\" id=\"chunk-" + this.id + "\">"+this.content+"</span>"
+			}
+		};
+
+		CHUNKS[chunk.id] = chunk;
+
+		if (previousChunkId == undefined || previousChunkId == null || FIRST_CHUNK_ID == undefined){
+			var oldFirstChunk = FIRST_CHUNK_ID;
+			FIRST_CHUNK_ID = chunk.id;
+			chunk.nextChunk = oldFirstChunk;
+			if (CHUNKS[oldFirstChunk] != undefined){
+				CHUNKS[oldFirstChunk].previousChunk = chunk.id;
+			}
+			return chunk;
+		}
+
+		var prevChunk = CHUNKS[previousChunkId];
+		if (prevChunk === undefined){
+			throw "The chunk with id [" + previousChunkId + "] does not exist.";
+		}
+
+		var next = CHUNKS[prevChunk.nextChunk];
+
+		chunk.previousChunk = prevChunk.id;
+		prevChunk.nextChunk = chunk.id;
+
+		if (next != undefined){
+			next.previousChunk = chunk.id;
+			chunk.nextChunk = next.id;
+		}
+
+		return chunk;
+	}
+
+	function deleteChunk (chunkId) {
+		var chunk = CHUNKS[chunkId];
+		if (chunk == undefined){
+			throw "The chunk with id [" + chunkId + "] does not exist.";
+		}
+
+		var prev = CHUNKS[chunk.previousChunk];
+		var next = CHUNKS[chunk.nextChunk];
+
+		if (prev != undefined && next == undefined){
+			prev.nextChunk = undefined;
+		} else if (prev == undefined && next != undefined){
+			FIRST_CHUNK_ID = next.id;
+		} else if (prev != undefined && next != undefined){
+			prev.nextChunk = next.id;
+			next.previousChunk = prev.id;
+		}
+		delete CHUNKS[chunkId];
+	}
+
+
+
+	function SEND ( args ) {
+		args["docUuid"] = DOCUMENT_UUID;
+		SOCKET.emit('modification', JSON.stringify(args));
+		console.log("SENT-->"+JSON.stringify(args));
+	}
+
+	function PROCESS ( args ) {
+		var commandType = args["commandType"];
+		if (commandIsInsert(commandType)){
+			OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
+		} else if (commandIsDelete(commandType)){
+			OPERATIONS.delete(args.chunkDeleted);
+		} else if (commandIsMoveCursor(commandType)){
+			OPERATIONS.moveCursor(args.cursorId, args.newLocation);
+		}
+	}
+
+	
+
+	function commandInsert() { return 1; }
+	function commandIsInsert(commandType) { return (commandType == 1); }
+
+	function commandDelete() { return 2; }
+	function commandIsDelete(commandType) { return (commandType == 2); }
+
+	function commandMoveCursor() { return 3; }
+	function commandIsMoveCursor(commandType) { return (commandType == 3); }
+
+
 	$(window).keydown(function(e){
 		var c = e.which;
 		if (c == 8) {
@@ -276,15 +375,63 @@ $(document).ready(function(){
 			e.preventDefault();
 		}
 	});
+
+	setup();
 });
 
-/* 
-DEPRECATED
+/* DEPRECATED */
+/*
+
+function getChunkList(){
+	if (FIRST_CHUNK_ID === undefined){
+		return [];
+	}
+	var id = FIRST_CHUNK_ID;
+	var chunk = CHUNKS[id];
+	var result = [];
+	while (chunk != undefined){
+		result.push(chunk);
+		id = chunk.nextChunk;
+		chunk = CHUNKS[id];
+	}
+	return result;
+}
+
+function getChunkIdList(){
+	var result = [];
+	var chunkList = getChunkList();
+	for (var i in chunkList){
+		result.push(chunkList[i].id);
+	}
+	return result;
+}
 function toggleCursor(id){
 	cursor = cursors[id];
 	if (cursor == undefined){
 		cursor = createCursor(id);
 		cursor.place(1);
+	}
+}
+
+function clearState(){
+	CHUNKS = {};
+	FIRST_CHUNK_ID = undefined;
+	$("#chunks").empty();
+	OPERATIONS.setup();
+}
+
+var RECORDING = true;
+var COMMANDLIST = [];
+
+function ENDRECORD(){
+	RECORDING = false;
+	return COMMANDLIST;
+}
+
+function REPLAY ( argList , speed ){
+	clearState();
+	for (var i in argList){
+		PROCESS(argList[i]);
 	}
 }
 */
