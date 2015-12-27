@@ -1,5 +1,5 @@
 .chunk {
-	font-family: 'Serif';
+	font-family: 'PT Serif', serif;
 	white-space: pre-wrap;
 }
 
@@ -27,5 +27,3 @@
     border-radius: 1px;
     color: #9C27B0;
 }
-
-
