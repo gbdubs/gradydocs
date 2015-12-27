@@ -3,7 +3,7 @@ var OPERATIONS = {};
 $(document).ready(function(){
 
 	var currentUrl = window.location.href;
-	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/'));
+	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
 
 	/* * * * * * *\
 	    CURSORS
@@ -155,12 +155,12 @@ $(document).ready(function(){
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
 
-		$.get("/user-number-plz/"+docUuid, function(data){
+		$.get("/user-number-plz/"+DOCUMENT_UUID, function(data){
 			var cursorNumber = parseInt(data);
 			cursor = createCursor(cursorNumber);
 			cursor.place(1);
 			NEXT_CHUNK_ID = 2 + 10000000 * cursorNumber;
-			$.get("/catchup-plz/"+docUuid, function(data){
+			$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
 					PROCESS(JSON.parse(listOfData[i]));
@@ -168,7 +168,10 @@ $(document).ready(function(){
 			});
 		});
 
-		var SOCKET = io('');
+		SOCKET = io();
+
+		SOCKET.emit('joining', DOCUMENT_UUID);
+
 		SOCKET.on('modification', function(msg){
 			console.log("RECIEVED-->"+msg);
 			PROCESS ( JSON.parse(msg) );
@@ -328,8 +331,6 @@ $(document).ready(function(){
 			OPERATIONS.moveCursor(args.cursorId, args.newLocation);
 		}
 	}
-
-	
 
 	function commandInsert() { return 1; }
 	function commandIsInsert(commandType) { return (commandType == 1); }

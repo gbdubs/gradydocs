@@ -25,7 +25,12 @@ function LOG (docUuid, msg){
 }
 
 function GET_LOG (docUuid) {
-	return JSON.stringify(theLog[docUuid]);
+  var log = theLog[docUuid];
+  if (log == undefined){
+    return "[]";
+  } else {
+    return JSON.stringify(log);
+  }
 }
 
 function getDocUuid (req) {
@@ -36,26 +41,29 @@ app.get(/\/catchup-plz\/.*/, function(req, res){
   res.send(GET_LOG(getDocUuid(req)));
 });
 
-app.get('/\/user-number-plz\/.*/', function(req, res){
+app.get(/\/user-number-plz\/.*/, function(req, res){
   res.send("" + GET_USER_NUMBER(getDocUuid(req)));
 });
 
-app.get('/', function(req, res){
+app.get(/\/edit\/.*/, function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
 app.use(express.static('public'));
 
 io.on('connection', function(socket){
-  socket.join('someroom');
+  
+  socket.on('joining', function(docUuid){
+    socket.join(docUuid);
+  });
 
   socket.on('modification', function(msg){
   	var parsed = JSON.parse(msg);
   	var docUuid = parsed.docUuid;
-  	console.log("DOCUUUID = ["+docUuid+"]");
-    socket.broadcast.emit('modification', msg);
-    allOperationsThusFar.push(msg);
+    socket.broadcast.to(docUuid).emit('modification', msg);
+    LOG(docUuid, msg);
   });
+
 });
 
 http.listen(3000, function(){
