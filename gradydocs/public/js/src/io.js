@@ -141,6 +141,8 @@ $(document).ready(function(){
 	\* * * * * * * * * * */
 
 	var CHUNKID = -1;
+	var currentUrl = window.location.href;
+	var DOC_UUID = currentUrl.substring(currentUrl.lastIndexOf('/'));
 
 	function setup(){
 		var achoringChunk = createChunk(1);
@@ -149,14 +151,13 @@ $(document).ready(function(){
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
 
-		$.get("/user-number-plz", function(data){
+		
+		$.get("/user-number-plz/"+docUuid, function(data){
 			var cursorNumber = parseInt(data);
-			console.log(cursorNumber);
 			cursor = createCursor(cursorNumber);
 			cursor.place(1);
-			CHUNKID = 2 + 1000000 * cursorNumber;
-
-			$.get("/catchup-plz", function(data){
+			CHUNKID = 2 + 10000000 * cursorNumber;
+			$.get("/catchup-plz/"+docUuid, function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
 					PROCESS(JSON.parse(listOfData[i]));

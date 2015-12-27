@@ -1,4 +1,7 @@
+var DOCUMENT_UUID = '123456789';
+
 var FIRST_CHUNK_ID = undefined;
+
 var CHUNKS = {};
 
 function clearState(){
@@ -93,27 +96,10 @@ function deleteChunk (chunkId) {
 	delete CHUNKS[chunkId];
 }
 
-var RECORDING = true;
-var COMMANDLIST = [];
-
-function ENDRECORD(){
-	RECORDING = false;
-	return COMMANDLIST;
-}
-
-function REPLAY ( argList , speed ){
-	clearState();
-	for (var i in argList){
-		PROCESS(argList[i]);
-	}
-}
-
 var socket = io();
 
 function SEND ( args ) {
-	if (RECORDING){
-		COMMANDLIST.push(args);
-	}
+	args["docUuid"] = DOCUMENT_UUID;
 	socket.emit('modification', JSON.stringify(args));
 	console.log("SENT-->"+JSON.stringify(args));
 }
@@ -142,3 +128,20 @@ function commandIsDelete(commandType) { return (commandType == 2); }
 
 function commandMoveCursor() { return 3; }
 function commandIsMoveCursor(commandType) { return (commandType == 3); }
+
+/* DEPRECATED */
+
+/*var RECORDING = true;
+var COMMANDLIST = [];
+
+function ENDRECORD(){
+	RECORDING = false;
+	return COMMANDLIST;
+}
+
+function REPLAY ( argList , speed ){
+	clearState();
+	for (var i in argList){
+		PROCESS(argList[i]);
+	}
+}*/
