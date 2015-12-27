@@ -25,6 +25,7 @@ function LOG (docUuid, msg){
 }
 
 function GET_LOG (docUuid) {
+  console.log("LOG REQUESTED FOR ["+docUuid+"]");
   var log = theLog[docUuid];
   if (log == undefined){
     return "[]";
@@ -34,7 +35,7 @@ function GET_LOG (docUuid) {
 }
 
 function getDocUuid (req) {
-	return req.url.substring(req.url.lastIndexOf("/"));
+	return req.url.substring(req.url.lastIndexOf("/")+1);
 }
 
 app.get(/\/catchup-plz\/.*/, function(req, res){
@@ -60,8 +61,9 @@ io.on('connection', function(socket){
   socket.on('modification', function(msg){
   	var parsed = JSON.parse(msg);
   	var docUuid = parsed.docUuid;
-    socket.broadcast.to(docUuid).emit('modification', msg);
+    console.log("Message Logged to ["+docUuid+"]")
     LOG(docUuid, msg);
+    socket.broadcast.to(docUuid).emit('modification', msg);
   });
 
 });
