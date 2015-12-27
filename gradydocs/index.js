@@ -32,34 +32,12 @@ function getDocUuid (req) {
 	return req.url.substring(req.url.lastIndexOf("/"));
 }
 
-/*
-var MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
-
-
-
-
-
-// Connection URL
-var url = 'mongodb://localhost:27017/myproject';
-// Use connect method to connect to the Server
-MongoClient.connect(url, function(err, db) {
-  assert.equal(null, err);
-  console.log("Connected correctly to server");
-
-  db.close();
-});
-
-*/
-
 app.get(/\/catchup-plz\/.*/, function(req, res){
-  var docUuid = getDocUuid(req);
-  console.log("DOCID: " + docUuid); 
-  res.send(GET_LOG(docUuid));
+  res.send(GET_LOG(getDocUuid(req)));
 });
 
-app.get('/user-number-plz', function(req, res){
-  res.send("" + GET_USER_NUMBER);
+app.get('/\/user-number-plz\/.*/', function(req, res){
+  res.send("" + GET_USER_NUMBER(getDocUuid(req)));
 });
 
 app.get('/', function(req, res){
@@ -83,3 +61,19 @@ io.on('connection', function(socket){
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
+/*
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
+
+// Connection URL
+var url = 'mongodb://localhost:27017/myproject';
+// Use connect method to connect to the Server
+MongoClient.connect(url, function(err, db) {
+  assert.equal(null, err);
+  console.log("Connected correctly to server");
+
+  db.close();
+});
+
+*/
