@@ -41,7 +41,8 @@ $(document).ready(function(){
   														'-moz-animation: 1s blink step-end infinite;'+
   														'-ms-animation: 1s blink step-end infinite;'+
   														'-o-animation: 1s blink step-end infinite;'+
-  														'animation: 1s blink step-end infinite;';
+  														'animation: 1s blink step-end infinite;\n'+
+  														'.chunk.listening-'+cursorId+':after { background-color: '+color+' !important; }';
 		}
 
 		head = document.head || document.getElementsByTagName('head')[0],
