@@ -375,6 +375,9 @@ $(document).ready(function(){
 		if (c == 8){
 			e.preventDefault();
 		}
+		if (c == 32){
+			e.preventDefault();
+		}
 	});
 
 	setup();
