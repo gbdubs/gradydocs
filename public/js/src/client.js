@@ -32,8 +32,17 @@ $(document).ready(function(){
 	function addCursorCssToDocument(cursorId){
 		var color = CURSOR_COLORS[cursorId % CURSOR_COLORS.length];
 		var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
-					'.chunk.listening-'+cursorId+':after { color: '+color+'; content: ""; position: absolute; display: inline-block; height: 19px; border-right: 2px solid; bottom: 0px; border-radius: 1px; }\n'+
-					'.chunk.listening-'+cursorId+':before{ color: '+color+'; position: absolute; border: 2px solid; bottom: 17px; right: -1px; border-radius: 1px; }\n';
+					'.chunk.listening-'+cursorId+':after { background-color: '+color+'; content: ""; position: absolute; display: inline-block; height: 100%; width: 2px; bottom: 0px; border-radius: 1px; }\n';
+					//'.chunk.listening-'+cursorId+':before{ color: '+color+'; position: absolute; border: 2px solid; bottom: 17px; right: -1px; border-radius: 1px; }\n';
+
+		if (cursorId == CURSOR_NO){
+			css += '.header{ background: ' + color + ' !important;}\n';
+			css += '.chunk.listening-'+cursorId+':after{ -webkit-animation: 1s blink step-end infinite;'+
+  														'-moz-animation: 1s blink step-end infinite;'+
+  														'-ms-animation: 1s blink step-end infinite;'+
+  														'-o-animation: 1s blink step-end infinite;'+
+  														'animation: 1s blink step-end infinite;';
+		}
 
 		head = document.head || document.getElementsByTagName('head')[0],
 		style = document.createElement('style');
@@ -147,6 +156,7 @@ $(document).ready(function(){
 	var CHUNKS = {};
 	var NEXT_CHUNK_ID = -1;
 	var SOCKET = undefined;
+	var CUSOR_NO = -1;
 
 	function setup(){
 		var achoringChunk = createChunk(1);
@@ -155,11 +165,15 @@ $(document).ready(function(){
 		$("#chunks").append(achoringChunkElement);
 		achoringChunk.element = $("#chunk-1")[0];
 
+		$(".document-id").each(function(){
+			$(this).text(DOCUMENT_UUID);
+		});
+
 		$.get("/user-number-plz/"+DOCUMENT_UUID, function(data){
-			var cursorNumber = parseInt(data);
-			cursor = createCursor(cursorNumber);
+			CURSOR_NO = parseInt(data);
+			cursor = createCursor(CURSOR_NO);
 			cursor.place(1);
-			NEXT_CHUNK_ID = 2 + 10000000 * cursorNumber;
+			NEXT_CHUNK_ID = 2 + 10000000 * CURSOR_NO;
 			$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
