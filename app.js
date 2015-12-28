@@ -12,16 +12,14 @@ var userNumbers = {};
 var theLog = {};
 var editsSinceLastSave = {};
 
-function GET_USER_NUMBER (docUuid) {
+function GET_USER_NUMBER (docUuid, callback) {
 	if (userNumbers[docUuid] == undefined){
-    LOAD_DOCUMENT(docUuid);
-    while (userNumbers[docUuid] == undefined){
-      // Spin, again, we need to fix this...
-    }
-		return userNumbers[docUuid];
+    LOAD_DOCUMENT(docUuid, function() {
+      callback(userNumbers[docUuid]);
+    });
 	} else {
 		userNumbers[docUuid]++;
-		return userNumbers[docUuid];
+		callback(userNumbers[docUuid]);
 	}
 }
 
@@ -33,16 +31,14 @@ function LOG (docUuid, msg){
   CONSIDER_A_SAVE(docUuid);
 }
 
-function GET_LOG (docUuid) {
+function GET_LOG (docUuid, callback) {
   var log = theLog[docUuid];
   if (log == undefined){
-    LOAD_DOCUMENT(docUuid);
-    while (theLog[docUuid] == undefined){
-      // Yikes I need to do a more functional approach here.
-    }
-    return theLog[docUuid];
+    LOAD_DOCUMENT(docUuid, function(){
+      callback(theLog[docUuid]);
+    });
   } else {
-    return log;
+    callback(theLog[docUuid]);
   }
 }
 
@@ -58,9 +54,10 @@ function CONSIDER_A_SAVE (docUuid){
 }
 
 function SAVE_DOCUMENT (docUuid){
+
   var data = {
-    userNumber : GET_USER_NUMBER(docUuid),
-    log: GET_LOG(docUuid)
+    userNumber : userNumbers[docUuid],
+    log: theLog[docUuid]
   }
 
   MongoClient.connect(databaseUrl, function(err, db) {
@@ -74,26 +71,30 @@ function SAVE_DOCUMENT (docUuid){
   });
 }
 
-function LOAD_DOCUMENT (docUuid) {
+function LOAD_DOCUMENT (docUuid, callback) {
   MongoClient.connect(databaseUrl, function(err, db) {
     assert.equal(null, err);
     var collection = db.collection('documents');
     collection.find({ _id : docUuid }).toArray(function(err, docs){
       assert.equal(err, null);
+      
       if (docs.length == 0){
         console.log("Did not find a document with id: " + docUuid + ", so I set the state vars to be new.");
         userNumbers[docUuid] = 1;
         theLog[docUuid] = [];
+        callback();
+        return;
       }
 
       var resultingDocument = docs[0];
 
-      //console.log("Grabbed "+docs.length+" documents successfully.");
       //db.close();
-      //console.log("Closed DB successfully.");
-      console.log("Successfully retrieved document with id: " + docUuid + ", and updated state vars.");
+
+      console.log("Successfully retrieved document "+(docs.length)+" with id: " + docUuid + ", and updated state vars.");
       userNumbers[docUuid] = resultingDocument.userNumber;
       theLog[docUuid] = resultingDocument.log;
+
+      callback();
     });
   });
 }
@@ -107,11 +108,15 @@ function getDocUuid (req) {
 ///////////////////////////////
 
 app.get(/^\/catchup-plz\/.*/, function(req, res){
-  res.send(JSON.stringify(GET_LOG(getDocUuid(req))));
+  GET_LOG(getDocUuid(req), function (log){
+    res.send(JSON.stringify(log));
+  });
 });
 
 app.get(/^\/user-number-plz\/.*/, function(req, res){
-  res.send("" + GET_USER_NUMBER(getDocUuid(req)));
+  GET_USER_NUMBER(getDocUuid(req), function(user_no){
+    res.send(""+user_no);
+  });
 });
 
 app.get(/^\/edit\/.*/, function(req, res){
