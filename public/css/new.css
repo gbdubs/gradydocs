@@ -41,7 +41,7 @@ h2{
 
 h3{
 	font-weight: 200;
-    font-size: pt;
+    font-size: 15pt;
 }
 
 h3.btn.disabled{
@@ -89,7 +89,9 @@ input {
 }
 
 .input-wrapper > .error{
-    color: red;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
 }
 
 .hidden {

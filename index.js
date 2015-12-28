@@ -38,16 +38,38 @@ function getDocUuid (req) {
 	return req.url.substring(req.url.lastIndexOf("/")+1);
 }
 
-app.get(/\/catchup-plz\/.*/, function(req, res){
+  ///////////////////////////////
+ // URL PATTERNS + PROCEDURES //
+///////////////////////////////
+
+app.get(/^\/catchup-plz\/.*/, function(req, res){
   res.send(GET_LOG(getDocUuid(req)));
 });
 
-app.get(/\/user-number-plz\/.*/, function(req, res){
+app.get(/^\/user-number-plz\/.*/, function(req, res){
   res.send("" + GET_USER_NUMBER(getDocUuid(req)));
 });
 
-app.get(/\/edit\/.*/, function(req, res){
+app.get(/^\/edit\/.*/, function(req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+app.get(/^\/new$/, function(req, res){
+  res.sendFile(__dirname + '/new.html');
+});
+
+app.get(/^\/$/, function(req, res){
+  res.sendFile(__dirname + '/landing.html');
+});
+
+app.get(/^\/proposed-doc-id/, function(req, res){
+  var proposedName = req.query.docid;
+  console.log("PROPOSED NAME " + req.query.docid);
+  if (userNumbers[proposedName] == undefined){
+    res.send("YES");
+  } else {
+    res.send("NO");
+  }
 });
 
 app.use(express.static('public'));
