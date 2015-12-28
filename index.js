@@ -51,7 +51,7 @@ app.get(/^\/user-number-plz\/.*/, function(req, res){
 });
 
 app.get(/^\/edit\/.*/, function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/document.html');
 });
 
 app.get(/^\/new$/, function(req, res){
