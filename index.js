@@ -25,7 +25,7 @@ function LOG (docUuid, msg){
 }
 
 function GET_LOG (docUuid) {
-  console.log("LOG REQUESTED FOR ["+docUuid+"]");
+  //console.log("LOG REQUESTED FOR ["+docUuid+"]");
   var log = theLog[docUuid];
   if (log == undefined){
     return "[]";
@@ -64,7 +64,7 @@ app.get(/^\/$/, function(req, res){
 
 app.get(/^\/proposed-doc-id/, function(req, res){
   var proposedName = req.query.docid;
-  console.log("PROPOSED NAME " + req.query.docid);
+  //console.log("PROPOSED NAME " + req.query.docid);
   if (userNumbers[proposedName] == undefined){
     res.send("YES");
   } else {
@@ -83,7 +83,7 @@ io.on('connection', function(socket){
   socket.on('modification', function(msg){
   	var parsed = JSON.parse(msg);
   	var docUuid = parsed.docUuid;
-    console.log("Message Logged to ["+docUuid+"]")
+    //console.log("Message Logged to ["+docUuid+"]")
     LOG(docUuid, msg);
     socket.broadcast.to(docUuid).emit('modification', msg);
   });
@@ -91,7 +91,7 @@ io.on('connection', function(socket){
 });
 
 http.listen(3000, function(){
-  console.log('listening on *:3000');
+  //console.log('listening on *:3000');
 });
 
 /*

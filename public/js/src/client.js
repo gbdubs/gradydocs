@@ -1,6 +1,6 @@
-var OPERATIONS = {};
-
 $(document).ready(function(){
+
+	var OPERATIONS = {};
 
 	var currentUrl = window.location.href;
 	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
@@ -173,7 +173,7 @@ $(document).ready(function(){
 		SOCKET.emit('joining', DOCUMENT_UUID);
 
 		SOCKET.on('modification', function(msg){
-			console.log("RECIEVED-->"+msg);
+			// console.log("RECIEVED-->"+msg);
 			PROCESS ( JSON.parse(msg) );
 		});
 	}
@@ -318,7 +318,7 @@ $(document).ready(function(){
 	function SEND ( args ) {
 		args["docUuid"] = DOCUMENT_UUID;
 		SOCKET.emit('modification', JSON.stringify(args));
-		console.log("SENT-->"+JSON.stringify(args));
+		// console.log("SENT-->"+JSON.stringify(args));
 	}
 
 	function PROCESS ( args ) {
@@ -382,60 +382,3 @@ $(document).ready(function(){
 
 	setup();
 });
-
-/* DEPRECATED */
-/*
-
-function getChunkList(){
-	if (FIRST_CHUNK_ID === undefined){
-		return [];
-	}
-	var id = FIRST_CHUNK_ID;
-	var chunk = CHUNKS[id];
-	var result = [];
-	while (chunk != undefined){
-		result.push(chunk);
-		id = chunk.nextChunk;
-		chunk = CHUNKS[id];
-	}
-	return result;
-}
-
-function getChunkIdList(){
-	var result = [];
-	var chunkList = getChunkList();
-	for (var i in chunkList){
-		result.push(chunkList[i].id);
-	}
-	return result;
-}
-function toggleCursor(id){
-	cursor = cursors[id];
-	if (cursor == undefined){
-		cursor = createCursor(id);
-		cursor.place(1);
-	}
-}
-
-function clearState(){
-	CHUNKS = {};
-	FIRST_CHUNK_ID = undefined;
-	$("#chunks").empty();
-	OPERATIONS.setup();
-}
-
-var RECORDING = true;
-var COMMANDLIST = [];
-
-function ENDRECORD(){
-	RECORDING = false;
-	return COMMANDLIST;
-}
-
-function REPLAY ( argList , speed ){
-	clearState();
-	for (var i in argList){
-		PROCESS(argList[i]);
-	}
-}
-*/

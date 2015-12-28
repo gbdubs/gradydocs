@@ -57,6 +57,4 @@ $(document).ready(function(){
         $(newExistsError).addClass("hidden");
         $(newBtn).removeClass("disabled");
     });
-    
-    
 });
