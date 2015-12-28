@@ -4,10 +4,34 @@
   	<script src="../js/lib/socket-io/socket.io-1.2.0.js"></script>
 	<script src="../js/src/client.js"></script>
 	<link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/document.css">
 	<link href='https://fonts.googleapis.com/css?family=Raleway:500,300,700,900|PT+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
 	<title>GradyDocs 0.1</title>
 </head>
 <body>
-	<div id="chunks"></div>
+    <div class="header">
+        <div class="links">
+            <a class="new-document" href="/new">New Document</a>
+            
+            <a class="new-document" href="/new">Switch Documents</a>
+        </div>
+        <a href="/">
+            <h2>GradyDocs</h2>
+        </a>
+        <br>
+        <h3>DocumentID [<span class="document-id">293874id</span>]</h3>  
+    </div>
+    
+	<div class="editing-area">
+        <div class="page">
+            <div id="chunks"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <span>Made by Grady Ward</span>
+        <a href="mailto:grady.b.ward@gmail.com">Contact</a>
+        <a href="https://github.com/gbdubs">Github</a>
+    </div>
 </body>
 </html>

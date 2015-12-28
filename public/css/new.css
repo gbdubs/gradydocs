@@ -97,3 +97,9 @@ input {
 .hidden {
     display: none;
 }
+
+.footer > *{
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
+    padding: 0 20px 40px 20px;
+}

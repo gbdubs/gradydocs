@@ -1,0 +1,99 @@
+body{
+    background: rgba(0,0,0,.05);
+    margin:0;
+    text-align: center;
+}
+
+
+.header{
+    text-align: left;
+    position: fixed;
+    width: Calc(100% - 20px);
+    background: #3F51B5;
+    top: 0;
+    color: white;
+    font-family: 'Raleway', sans-serif;
+    box-shadow: 1px 4px 15px rgba(0,0,0,.6);
+    padding: 10px;
+}
+
+.header a{
+    text-decoration: none;
+    color: white;
+}
+
+.header h2{
+    margin: 0;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.header h3{
+    display: inline-block;
+    margin: 0;
+}
+
+.header .links{
+    margin-top: 3px;
+    display:inline-block;
+    float: right;
+    text-align: right;
+}
+
+.header .links a {
+    display: block;
+    padding: 2px;
+}
+
+.editing-area{
+    text-align: center;
+    margin-top: 70px;
+    font-family: 'PT Serif', sans-serif;
+}
+
+.page{
+    min-width: Calc(100%-50px);
+    max-width: 700px;
+    height: 1000px;
+    background: white;
+    display: inline-block;
+    border-radius: 1px;
+    box-shadow: 1px 4px 15px rgba(0,0,0,.6);
+    padding: 100px;
+    text-align: left;
+    margin: 50px;
+}
+
+@media (max-width: 800px) {
+    .page{
+        padding: 80px;
+        margin: 30px;
+    }
+}
+
+@media (max-width: 700px) {
+    .page{
+        padding: 50px;
+        margin: 25px;
+    }
+}
+
+@media (max-width: 600px) {
+    .page{
+        padding: 35px;
+        margin: 20px;
+    }
+}
+
+@media (max-width: 400px) {
+    .page{
+        padding: 20px;
+        margin: 15px;
+    }
+}
+
+.footer > *{
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
+    padding: 0 20px 40px 20px;
+}

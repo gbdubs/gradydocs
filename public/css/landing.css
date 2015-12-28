@@ -97,5 +97,7 @@ h3.btn:hover{
 }
 
 .footer > *{
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
     padding: 0 20px 20px 20px;
 }
