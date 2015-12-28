@@ -2,15 +2,23 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
 
-var userNumbersUnused = []
+// Database Connection URL
+var databaseUrl = 'mongodb://localhost:27017/myproject';
+
 var userNumbers = {};
 var theLog = {};
+var editsSinceLastSave = {};
 
 function GET_USER_NUMBER (docUuid) {
 	if (userNumbers[docUuid] == undefined){
-		userNumbers[docUuid] = 1;
-		return 1;
+    LOAD_DOCUMENT(docUuid);
+    while (userNumbers[docUuid] == undefined){
+      // Spin, again, we need to fix this...
+    }
+		return userNumbers[docUuid];
 	} else {
 		userNumbers[docUuid]++;
 		return userNumbers[docUuid];
@@ -22,16 +30,72 @@ function LOG (docUuid, msg){
 		theLog[docUuid] = [];
 	}
 	theLog[docUuid].push(msg);
+  CONSIDER_A_SAVE(docUuid);
 }
 
 function GET_LOG (docUuid) {
-  //console.log("LOG REQUESTED FOR ["+docUuid+"]");
   var log = theLog[docUuid];
   if (log == undefined){
-    return "[]";
+    LOAD_DOCUMENT(docUuid);
+    while (theLog[docUuid] == undefined){
+      // Yikes I need to do a more functional approach here.
+    }
+    return theLog[docUuid];
   } else {
-    return JSON.stringify(log);
+    return log;
   }
+}
+
+function CONSIDER_A_SAVE (docUuid){
+  if (editsSinceLastSave[docUuid] == undefined){
+    editsSinceLastSave[docUuid] = 0;
+  }
+  editsSinceLastSave[docUuid]++;
+
+  if (editsSinceLastSave[docUuid] % 50 == 0){
+    SAVE_DOCUMENT(docUuid);
+  }
+}
+
+function SAVE_DOCUMENT (docUuid){
+  var data = {
+    userNumber : GET_USER_NUMBER(docUuid),
+    log: GET_LOG(docUuid)
+  }
+
+  MongoClient.connect(databaseUrl, function(err, db) {
+    assert.equal(null, err);
+    var collection = db.collection('documents');
+    collection.update({ _id : docUuid }, {$set : data}, {upsert : true}, function (err, result){
+      assert.equal(err, null);
+      console.log("Saved Document with id ["+docUuid+"] into the document collection.");
+      db.close();
+    });
+  });
+}
+
+function LOAD_DOCUMENT (docUuid) {
+  MongoClient.connect(databaseUrl, function(err, db) {
+    assert.equal(null, err);
+    var collection = db.collection('documents');
+    collection.find({ _id : docUuid }).toArray(function(err, docs){
+      assert.equal(err, null);
+      if (docs.length == 0){
+        console.log("Did not find a document with id: " + docUuid + ", so I set the state vars to be new.");
+        userNumbers[docUuid] = 1;
+        theLog[docUuid] = [];
+      }
+
+      var resultingDocument = docs[0];
+
+      //console.log("Grabbed "+docs.length+" documents successfully.");
+      //db.close();
+      //console.log("Closed DB successfully.");
+      console.log("Successfully retrieved document with id: " + docUuid + ", and updated state vars.");
+      userNumbers[docUuid] = resultingDocument.userNumber;
+      theLog[docUuid] = resultingDocument.log;
+    });
+  });
 }
 
 function getDocUuid (req) {
@@ -43,7 +107,7 @@ function getDocUuid (req) {
 ///////////////////////////////
 
 app.get(/^\/catchup-plz\/.*/, function(req, res){
-  res.send(GET_LOG(getDocUuid(req)));
+  res.send(JSON.stringify(GET_LOG(getDocUuid(req))));
 });
 
 app.get(/^\/user-number-plz\/.*/, function(req, res){
@@ -94,18 +158,10 @@ http.listen(8081, function(){
   console.log('listening on *:8081');
 });
 
-/*
-var MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
 
-// Connection URL
-var url = 'mongodb://localhost:27017/myproject';
-// Use connect method to connect to the Server
-MongoClient.connect(url, function(err, db) {
-  assert.equal(null, err);
-  console.log("Connected correctly to server");
 
-  db.close();
-});
 
-*/
+
+
+
+
