@@ -162,6 +162,8 @@ body{
     position: relative;
     padding: 5px 10px;
     font-weight: 600;
+    z-index: 2;
+    height: 30px;
 }
 
 .chat-header > span.chat-waiting {
@@ -183,17 +185,36 @@ body{
 }
 
 .chat-toggle-tools > span {
-    font-size: 22px;
-    padding: 5px;
+    font-size: 30px;
+    display: inline-block;
+    padding-top: 3px;
+    position: absolute;
+    height: 37px;
+    top: 0;
+    width: 40px;
+    right: 0;
+    text-align: center;
+    cursor: pointer;
 }
+
+.chat-toggle-tools > span.minimize{
+    padding-top: 0px;
+    height: 40px;
+} 
 
 .chat-body {
     height: 400px;
+    transition: height .6s;
     background: rgba(0,0,0,.2);
+}
+
+.chat-body.minimized{
+    height: 0px;
 }
 
 .chat-message {
     background: gray;
+    color: white;
     opacity: .9;
     padding: 5px 10px;
     margin: 10px 5px;
@@ -203,8 +224,9 @@ body{
 }
 
 .chat-messages {
-    height: Calc(100% - 40px);
+    height: Calc(100% - 50px);
     padding: 5px;
+    overflow: scroll;
 }
 
 .chat-message.me {
@@ -244,6 +266,11 @@ span.chat-send-button.header {
     padding: 10px;
 }
 
+.chat-toggle-tools > span:hover,
 span.chat-send-button.header:hover {
     box-shadow: 1px 4px 15px rgba(0,0,0,.8);
+}
+
+.chat-toggle-tools > span.hidden {
+    display: none;
 }

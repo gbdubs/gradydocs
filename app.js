@@ -154,7 +154,6 @@ io.on('connection', function(socket){
   socket.on('modification', function(msg){
   	var parsed = JSON.parse(msg);
   	var docUuid = parsed.docUuid;
-    //console.log("Message Logged to ["+docUuid+"]")
     LOG(docUuid, msg);
     socket.broadcast.to(docUuid).emit('modification', msg);
   });
@@ -164,11 +163,3 @@ io.on('connection', function(socket){
 http.listen(8081, function(){
   console.log('listening on *:8081');
 });
-
-
-
-
-
-
-
-
