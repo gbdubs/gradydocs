@@ -12,7 +12,7 @@ body{
     top: 0;
     color: white;
     font-family: 'Raleway', sans-serif;
-    box-shadow: 1px 4px 15px rgba(0,0,0,.6);
+    box-shadow: 1px 4px 15px rgba(0,0,0,.4);
     padding: 10px;
     z-index: 1;
 }
@@ -45,9 +45,46 @@ body{
     padding: 2px;
 }
 
+.toolbar:after {
+    background: white;
+    content: '';
+    width: 100%;
+    height: 100%;
+    display:inline-block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.toolbar {
+    margin: 10px -10px -5px -10px;
+    padding: 0 10px;
+    background: inherit;
+    color: slategray;
+    position: relative;
+}
+
+.toolbar > span {
+    display: inline-block;
+    padding: 5px 10px;
+    background: white;
+    transition: all .3s;
+    z-index: 5;
+    position: relative;
+}
+
+.toolbar > span:hover {
+    background: inherit;
+    transition: all .3s;
+    color: white;
+    cursor: pointer;
+}
+
+
 .editing-area{
     text-align: center;
-    margin-top: 70px;
+    margin-top: 105px;
     font-family: 'PT Serif', sans-serif;
 }
 

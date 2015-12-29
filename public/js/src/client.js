@@ -184,6 +184,11 @@ $(document).ready(function(){
 			});
 		});
 
+
+		$("#download-btn").click(function(){
+			redirectToDownloadPage();
+		});
+
 		SOCKET = io();
 
 		SOCKET.emit('joining', DOCUMENT_UUID);
@@ -347,6 +352,22 @@ $(document).ready(function(){
 		}
 	}
 
+	function getContentAsString(){
+		var result = "";
+		var current = FIRST_CHUNK_ID;
+		while (current){
+			result = result + CHUNKS[current].content;
+			current = CHUNKS[current].nextChunk;
+		}
+		return result;
+	}
+
+	function redirectToDownloadPage(){
+		var content = getContentAsString();
+		var newUri = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+		window.open(newUri,'_blank');
+	}
+
 	function commandInsert() { return 1; }
 	function commandIsInsert(commandType) { return (commandType == 1); }
 
@@ -378,7 +399,7 @@ $(document).ready(function(){
 		} else if (c == 40){
 			cursor.down();
 		} else if (c == 27){
-			toggleCursor(cursor.cursorId%5+1);
+			redirectToDownloadPage();
 		}
 	});
 
