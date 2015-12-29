@@ -149,3 +149,101 @@ body{
 @-webkit-keyframes "blink" { from, to { opacity: 1; } 50% { opacity: 0; } }
 @-ms-keyframes "blink" { from, to { opacity: 1; } 50% { opacity: 0; } }
 @-o-keyframes "blink" { from, to { opacity: 1; } 50% { opacity: 0; } }
+
+#chat-box {
+    font-family: 'Raleway', sans-serif;
+    position: fixed;
+    bottom: 0;
+    right: 10;
+    width: 300px;
+}
+
+.chat-header.header {
+    position: relative;
+    padding: 5px 10px;
+    font-weight: 600;
+}
+
+.chat-header > span.chat-waiting {
+    border: 2px solid white;
+    margin: 0px 5px;
+    padding: 0 5px;
+    font-size: 15px;
+    border-radius: 50%;
+}
+
+.chat-header > span {
+    padding: 5px;
+    display: inline-block;
+}
+
+.chat-toggle-tools {
+    display: inline-block;
+    float: right;
+}
+
+.chat-toggle-tools > span {
+    font-size: 22px;
+    padding: 5px;
+}
+
+.chat-body {
+    height: 400px;
+    background: rgba(0,0,0,.2);
+}
+
+.chat-message {
+    background: gray;
+    opacity: .9;
+    padding: 5px 10px;
+    margin: 10px 5px;
+    font-size: 15px;
+    text-align: left;
+    border-radius: 10px;
+}
+
+.chat-messages {
+    height: Calc(100% - 40px);
+    padding: 5px;
+}
+
+.chat-message.me {
+    background: red;
+}
+
+.chat-field {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    min-height: 40px;
+    background: white;
+}
+
+span.chat-send-button {
+    padding: 5px;
+    display: inline-block;
+    background: blue;
+    color: white;
+    height: 100%;
+}
+
+span.chat-send-button.header {
+    position: absolute;
+    height: Calc(100% - 2px);
+    width: 40px;
+    right:  0;
+    padding-top: 10px;
+    cursor: pointer;
+}
+
+.chat-field > input[type="text"] {
+    position: absolute;
+    left: 0;
+    width: Calc(100% - 50px);
+    height: 100%;
+    padding: 10px;
+}
+
+span.chat-send-button.header:hover {
+    box-shadow: 1px 4px 15px rgba(0,0,0,.8);
+}
