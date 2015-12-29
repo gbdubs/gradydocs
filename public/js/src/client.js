@@ -174,7 +174,8 @@ $(document).ready(function(){
 			CURSOR_NO = parseInt(data);
 			cursor = createCursor(CURSOR_NO);
 			cursor.place(1);
-			NEXT_CHUNK_ID = 2 + 10000000 * CURSOR_NO;
+			var minChunkId = 2 + 10000000 * CURSOR_NO;
+			NEXT_CHUNK_ID = minChunkId;
 			$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
 				var listOfData = JSON.parse(data);
 				for (var i in listOfData){
@@ -327,7 +328,6 @@ $(document).ready(function(){
 		}
 		delete CHUNKS[chunkId];
 	}
-
 
 
 	function SEND ( args ) {

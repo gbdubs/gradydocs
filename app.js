@@ -15,10 +15,11 @@ var editsSinceLastSave = {};
 function GET_USER_NUMBER (docUuid, callback) {
 	if (userNumbers[docUuid] == undefined){
     LOAD_DOCUMENT(docUuid, function() {
+      userNumbers[docUuid]++;
       callback(userNumbers[docUuid]);
     });
 	} else {
-		userNumbers[docUuid]++;
+    userNumbers[docUuid]++;
 		callback(userNumbers[docUuid]);
 	}
 }
@@ -92,8 +93,9 @@ function LOAD_DOCUMENT (docUuid, callback) {
 
       console.log("Successfully retrieved document "+(docs.length)+" with id: " + docUuid + ", and updated state vars.");
       userNumbers[docUuid] = resultingDocument.userNumber;
+      console.log("   N USERS = " + userNumbers[docUuid]);
       theLog[docUuid] = resultingDocument.log;
-
+      console.log("   LOG LEN = " + theLog[docUuid].length);
       callback();
     });
   });
