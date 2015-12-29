@@ -7,12 +7,12 @@ $(document).ready(function(){
 
 	/* * * * * * *\
 	    CURSORS
-	\* * * * * * */
+	    \* * * * * * */
 
-	var cursors = {};
-	var cursor = undefined;
+	    var cursors = {};
+	    var cursor = undefined;
 
-	var CURSOR_COLORS = [
+	    var CURSOR_COLORS = [
 		"#000000", // Black
 		"#3F51B5", // Indigo
 		"#4CAF50", // Green
@@ -27,131 +27,131 @@ $(document).ready(function(){
 		"#CDDC39", // Lime
 		"#E91E63", // Pink
 		"#607D8B"  // Blue Grey
-	];
+		];
 
-	function addCursorCssToDocument(cursorId){
-		var color = CURSOR_COLORS[cursorId % CURSOR_COLORS.length];
-		var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
-					'.chunk.listening-'+cursorId+':after { background-color: '+color+'; content: ""; position: absolute; display: inline-block; height: 100%; width: 2px; bottom: 0px; border-radius: 1px; }\n';
+		function addCursorCssToDocument(cursorId){
+			var color = CURSOR_COLORS[cursorId % CURSOR_COLORS.length];
+			var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
+			'.chunk.listening-'+cursorId+':after { background-color: '+color+'; content: ""; position: absolute; display: inline-block; height: 100%; width: 2px; bottom: 0px; border-radius: 1px; }\n';
 					//'.chunk.listening-'+cursorId+':before{ color: '+color+'; position: absolute; border: 2px solid; bottom: 17px; right: -1px; border-radius: 1px; }\n';
 
-		if (cursorId == CURSOR_NO){
-			css += '.header{ background: ' + color + ' !important;}\n';
-			css += '.chunk.listening-'+cursorId+':after{ -webkit-animation: 1s blink step-end infinite;'+
-  														'-moz-animation: 1s blink step-end infinite;'+
-  														'-ms-animation: 1s blink step-end infinite;'+
-  														'-o-animation: 1s blink step-end infinite;'+
-  														'animation: 1s blink step-end infinite;\n'+
-  														'.chunk.listening-'+cursorId+':after { background-color: '+color+' !important; }';
-		}
+					if (cursorId == CURSOR_NO){
+						css += '.header{ background: ' + color + ' !important;}\n';
+						css += '.chunk.listening-'+cursorId+':after{ -webkit-animation: 1s blink step-end infinite;'+
+						'-moz-animation: 1s blink step-end infinite;'+
+						'-ms-animation: 1s blink step-end infinite;'+
+						'-o-animation: 1s blink step-end infinite;'+
+						'animation: 1s blink step-end infinite;\n'+
+						'.chunk.listening-'+cursorId+':after { background-color: '+color+' !important; }';
+					}
 
-		head = document.head || document.getElementsByTagName('head')[0],
-		style = document.createElement('style');
-		style.type = 'text/css';
-		if (style.styleSheet){
-		  style.styleSheet.cssText = css;
-		} else {
-		  style.appendChild(document.createTextNode(css));
-		}
-		head.appendChild(style);
-	}
-
-	function createCursor(newId){
-		cursors[newId] = {
-			cursorId: newId,
-			location: -1,
-			element: undefined,
-			place: function(id){
-				var data = {
-					commandType: commandMoveCursor(),
-					cursorId: this.cursorId,
-					newLocation: id
-				};
-				PROCESS(data);
-				SEND(data);
-			},
-			move: function(id){
-				if (this.element != undefined){
-					$(this.element).removeClass("listening-"+this.cursorId);
-				}
-				this.location = id;
-				this.element = CHUNKS[this.location].element;
-				$(this.element).addClass("listening-"+this.cursorId);
-			},
-			left: function(){
-				var newId = CHUNKS[this.location].previousChunk;
-				if (newId != undefined && newId != -1){
-					if (CHUNKS[newId].placeholder){
-						newId = CHUNKS[newId].previousChunk;
+					head = document.head || document.getElementsByTagName('head')[0],
+					style = document.createElement('style');
+					style.type = 'text/css';
+					if (style.styleSheet){
+						style.styleSheet.cssText = css;
+					} else {
+						style.appendChild(document.createTextNode(css));
 					}
-					this.place(newId);
-				}
-			},
-			right: function(){
-				var newId = CHUNKS[this.location].nextChunk;
-				if (newId != undefined){
-					if (CHUNKS[newId].placeholder){
-						newId = CHUNKS[newId].nextChunk;
-					}
-					this.place(newId);
-				}
-			},
-			up: function(){
-				var c = CHUNKS[this.location];
-				var leftCoord = $(c.element).position().left;
-				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = CHUNKS[c.previousChunk]; }
-				if (c == undefined){ return; }
-				if (c.previousChunk == undefined){
-					this.place(c.id);
-					return;
-				}
-				c = CHUNKS[c.previousChunk];
-				while (c != undefined && c.content != '\r'){
-					if ($(c.element).position().left <= leftCoord){
-						this.place(c.id);
-						return;
-					}
-					c = CHUNKS[c.previousChunk];
-				}
-			},
-			down: function(){
-				var c = CHUNKS[this.location];
-				var leftCoord = $(c.element).position().left;
-				while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = CHUNKS[c.nextChunk]; }
-				if (c == undefined){ return; }
-				if (c.nextChunk == undefined){
-					this.place(c.id);
-					return;
-				}
-				c = CHUNKS[c.nextChunk];
-				while (c != undefined && c.content != '\r' && c.nextChunk != undefined){
-					if ($(c.element).position().left >= leftCoord){
-						this.place(c.id);
-						return;
-					}
-					c = CHUNKS[c.nextChunk];
-				}
-				if (c != undefined){
-					this.place(c.id);
-					return;
+					head.appendChild(style);
 				}
 
-			}
-		};
-		addCursorCssToDocument(newId);
-		return cursors[newId];
-	}
+				function createCursor(newId){
+					cursors[newId] = {
+						cursorId: newId,
+						location: -1,
+						element: undefined,
+						place: function(id){
+							var data = {
+								commandType: commandMoveCursor(),
+								cursorId: this.cursorId,
+								newLocation: id
+							};
+							PROCESS(data);
+							SEND(data);
+						},
+						move: function(id){
+							if (this.element != undefined){
+								$(this.element).removeClass("listening-"+this.cursorId);
+							}
+							this.location = id;
+							this.element = CHUNKS[this.location].element;
+							$(this.element).addClass("listening-"+this.cursorId);
+						},
+						left: function(){
+							var newId = CHUNKS[this.location].previousChunk;
+							if (newId != undefined && newId != -1){
+								if (CHUNKS[newId].placeholder){
+									newId = CHUNKS[newId].previousChunk;
+								}
+								this.place(newId);
+							}
+						},
+						right: function(){
+							var newId = CHUNKS[this.location].nextChunk;
+							if (newId != undefined){
+								if (CHUNKS[newId].placeholder){
+									newId = CHUNKS[newId].nextChunk;
+								}
+								this.place(newId);
+							}
+						},
+						up: function(){
+							var c = CHUNKS[this.location];
+							var leftCoord = $(c.element).position().left;
+							while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = CHUNKS[c.previousChunk]; }
+							if (c == undefined){ return; }
+							if (c.previousChunk == undefined){
+								this.place(c.id);
+								return;
+							}
+							c = CHUNKS[c.previousChunk];
+							while (c != undefined && c.content != '\r'){
+								if ($(c.element).position().left <= leftCoord){
+									this.place(c.id);
+									return;
+								}
+								c = CHUNKS[c.previousChunk];
+							}
+						},
+						down: function(){
+							var c = CHUNKS[this.location];
+							var leftCoord = $(c.element).position().left;
+							while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = CHUNKS[c.nextChunk]; }
+							if (c == undefined){ return; }
+							if (c.nextChunk == undefined){
+								this.place(c.id);
+								return;
+							}
+							c = CHUNKS[c.nextChunk];
+							while (c != undefined && c.content != '\r' && c.nextChunk != undefined){
+								if ($(c.element).position().left >= leftCoord){
+									this.place(c.id);
+									return;
+								}
+								c = CHUNKS[c.nextChunk];
+							}
+							if (c != undefined){
+								this.place(c.id);
+								return;
+							}
 
-	OPERATIONS["moveCursor"] = function(cursorId, newLocation){
-		if (cursors[cursorId] == undefined){
-			cursors[cursorId] = createCursor(cursorId);
-		}
-		cursors[cursorId].move(newLocation);
-	}
+						}
+					};
+					addCursorCssToDocument(newId);
+					return cursors[newId];
+				}
+
+				OPERATIONS["moveCursor"] = function(cursorId, newLocation){
+					if (cursors[cursorId] == undefined){
+						cursors[cursorId] = createCursor(cursorId);
+					}
+					cursors[cursorId].move(newLocation);
+				}
 
 	/* * * * * * * * * * *\
 	  ANCHORCHUNK + SETUP 
-	\* * * * * * * * * * */
+	  \* * * * * * * * * * */
 
 	var FIRST_CHUNK_ID = undefined;
 	var CHUNKS = {};
@@ -174,20 +174,37 @@ $(document).ready(function(){
 			CURSOR_NO = parseInt(data);
 			cursor = createCursor(CURSOR_NO);
 			cursor.place(1);
-			var minChunkId = 2 + 10000000 * CURSOR_NO;
-			NEXT_CHUNK_ID = minChunkId;
-			$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
-				var listOfData = JSON.parse(data);
-				for (var i in listOfData){
-					PROCESS(JSON.parse(listOfData[i]));
-				}
-			});
-		});
+	  		var minChunkId = 2 + 10000000 * CURSOR_NO;
+	  		NEXT_CHUNK_ID = minChunkId;
+	  		$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
+	  			var listOfData = JSON.parse(data);
+	  			for (var i in listOfData){
+	  				PROCESS(JSON.parse(listOfData[i]));
+	  			}
+	  		});
+	  	});
 
+	  	$("#download-btn").click(function(){
+	  		redirectToDownloadPage();
+	  	});
 
-		$("#download-btn").click(function(){
-			redirectToDownloadPage();
-		});
+	  	$("#save-btn").click(function(){
+	  		redirectToDownloadPage();
+	  	});
+
+	  	var chunksElement = document.getElementById('chunks');
+	  	chunksElement.onpaste = function(e) {
+	  		var pastedText = undefined;
+			if (window.clipboardData && window.clipboardData.getData) { // IE
+				pastedText = window.clipboardData.getData('Text');
+			} else if (e.clipboardData && e.clipboardData.getData) { // OTHERS
+				pastedText = e.clipboardData.getData('text/plain');
+			}
+			if (pastedText != undefined){
+				createNewChunkLocallyFromString(pastedText);
+			}
+			return false;
+		};
 
 		SOCKET = io();
 
@@ -236,6 +253,12 @@ $(document).ready(function(){
 		PROCESS(data);
 		SEND(data);
 		cursor.place(data.newChunkId);
+	}
+
+	function createNewChunkLocallyFromString(str){
+		for (var i = 0; i < str.length; i++){
+			createNewChunkLocally(str.charCodeAt(i));
+		}
 	}
 
 	function removeChunk(chunkId){
