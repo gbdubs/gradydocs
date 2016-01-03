@@ -1,8 +1,14 @@
 $(document).ready(function(){
     var currentURL = window.location.href;
     currentURL = currentURL.substring(0, currentURL.lastIndexOf("/new"));
+    
+    // The Regex that describes legal document names.
     var pattern = /^(\d|[a-z]|[A-Z]|-){1,30}$/;
     
+      ////////////////////////////
+     // GO TO DOCUMENT X LOGIC //
+    ////////////////////////////
+
     var gotoBtn   = $("#goto-doc > .btn");
     var gotoField = $("#goto-doc > input");
     var gotoError = $("#goto-doc > .error");
@@ -19,11 +25,16 @@ $(document).ready(function(){
         }
     });
     
+    // Resets any disabled fields after a change in the field.
     $(gotoField).change(function(){
         $(gotoError).addClass("hidden");
         $(gotoBtn).removeClass("disabled");
     });
     
+      /////////////////////////////
+     // CREATE DOCUMENT X LOGIC //
+    /////////////////////////////
+
     var newBtn   = $("#new-doc > .btn");
     var newField = $("#new-doc > input");
     var newCharError = $("#new-doc > .error.char");
@@ -52,6 +63,7 @@ $(document).ready(function(){
         }
     });
     
+    // Resets the fields if they have been disabled because of validation.
     $(newField).change(function(){
         $(newCharError).addClass("hidden");
         $(newExistsError).addClass("hidden");

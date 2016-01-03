@@ -5,37 +5,43 @@ $(document).ready(function(){
 	var currentUrl = window.location.href;
 	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
 
-	/* * * * * * *\
-	    CURSORS
-	\* * * * * * */
+	  //////////////////
+	 // CURSOR LOGIC //
+	//////////////////
 
-    var cursors = {};
+	// The cursor that this user has been assigned.
     var cursor = undefined;
 
-    var CURSOR_COLORS = [
-	"#000000", // Black
-	"#3F51B5", // Indigo
-	"#4CAF50", // Green
-	"#FFC107", // Amber
-	"#2196F3", // Blue
-	"#FF5722", // Deep Orange
-	"#009688", // Teal
-	"#FFEB3B", // Yellow
-	"#673AB7", // Deep Purple
-	"#F44336", // Red
-	"#9C27B0", // Purple
-	"#CDDC39", // Lime
-	"#E91E63", // Pink
-	"#607D8B"  // Blue Grey
+	// A dictionary describing all active cursors in the document.
+    var cursors = {};
+    
+    var cursorColors = [
+		"#000000", // Black
+		"#3F51B5", // Indigo
+		"#4CAF50", // Green
+		"#FFC107", // Amber
+		"#2196F3", // Blue
+		"#FF5722", // Deep Orange
+		"#009688", // Teal
+		"#FFEB3B", // Yellow
+		"#673AB7", // Deep Purple
+		"#F44336", // Red
+		"#9C27B0", // Purple
+		"#CDDC39", // Lime
+		"#E91E63", // Pink
+		"#607D8B"  // Blue Grey
 	];
 
 	function addCursorCssToDocument(cursorId){
-		var color = CURSOR_COLORS[cursorId % CURSOR_COLORS.length];
+		var color = cursorColors[cursorId % cursorColors.length];
+		
+		// Adds styles to color how ever many cursors end up being in the document.
 		var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
 					'.chunk.listening-'+cursorId+':after { background-color: '+color+'; content: ""; position: absolute; display: inline-block; height: 100%; width: 2px; bottom: 0px; border-radius: 1px; }\n'+
 					'.chat-message-'+cursorId+' { background-color: '+color+'; }\n';
-				
-		if (cursorId == CURSOR_NO){
+		
+		// Adds styles if it is the current cursor.		
+		if (cursorId == myCursorId){
 			css += '.header{ background: ' + color + ' !important;}\n';
 			css += '.chunk.listening-'+cursorId+':after{ -webkit-animation: 1s blink step-end infinite;'+
 			'-moz-animation: 1s blink step-end infinite;'+
@@ -45,6 +51,7 @@ $(document).ready(function(){
 			'.chunk.listening-'+cursorId+':after { background-color: '+color+' !important; }';
 		}
 
+		// Appends the styles to the document.
 		head = document.head || document.getElementsByTagName('head')[0],
 		style = document.createElement('style');
 		style.type = 'text/css';
@@ -56,6 +63,8 @@ $(document).ready(function(){
 		head.appendChild(style);
 	}
 
+	// Cursor objects are self contained, and locally use the PLACE function
+	// while all other methods either call place or are called by place.
 	function createCursor(newId){
 		cursors[newId] = {
 			cursorId: newId,
@@ -75,61 +84,61 @@ $(document).ready(function(){
 					$(this.element).removeClass("listening-"+this.cursorId);
 				}
 				this.location = id;
-				this.element = CHUNKS[this.location].element;
+				this.element = allChunks[this.location].element;
 				$(this.element).addClass("listening-"+this.cursorId);
 			},
 			left: function(){
-				var newId = CHUNKS[this.location].previousChunk;
+				var newId = allChunks[this.location].previousChunk;
 				if (newId != undefined && newId != -1){
-					if (CHUNKS[newId].placeholder){
-						newId = CHUNKS[newId].previousChunk;
+					if (allChunks[newId].placeholder){
+						newId = allChunks[newId].previousChunk;
 					}
 					this.place(newId);
 				}
 			},
 			right: function(){
-				var newId = CHUNKS[this.location].nextChunk;
+				var newId = allChunks[this.location].nextChunk;
 				if (newId != undefined){
-					if (CHUNKS[newId].placeholder){
-						newId = CHUNKS[newId].nextChunk;
+					if (allChunks[newId].placeholder){
+						newId = allChunks[newId].nextChunk;
 					}
 					this.place(newId);
 				}
 			},
 			up: function(){
-				var c = CHUNKS[this.location];
+				var c = allChunks[this.location];
 				var leftCoord = $(c.element).position().left;
-				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = CHUNKS[c.previousChunk]; }
+				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = allChunks[c.previousChunk]; }
 				if (c == undefined){ return; }
 				if (c.previousChunk == undefined){
 					this.place(c.id);
 					return;
 				}
-				c = CHUNKS[c.previousChunk];
+				c = allChunks[c.previousChunk];
 				while (c != undefined && c.content != '\r'){
 					if ($(c.element).position().left <= leftCoord){
 						this.place(c.id);
 						return;
 					}
-					c = CHUNKS[c.previousChunk];
+					c = allChunks[c.previousChunk];
 				}
 			},
 			down: function(){
-				var c = CHUNKS[this.location];
+				var c = allChunks[this.location];
 				var leftCoord = $(c.element).position().left;
-				while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = CHUNKS[c.nextChunk]; }
+				while (c.content != '\r' && c != undefined && c.nextChunk != undefined){ c = allChunks[c.nextChunk]; }
 				if (c == undefined){ return; }
 				if (c.nextChunk == undefined){
 					this.place(c.id);
 					return;
 				}
-				c = CHUNKS[c.nextChunk];
+				c = allChunks[c.nextChunk];
 				while (c != undefined && c.content != '\r' && c.nextChunk != undefined){
 					if ($(c.element).position().left >= leftCoord){
 						this.place(c.id);
 						return;
 					}
-					c = CHUNKS[c.nextChunk];
+					c = allChunks[c.nextChunk];
 				}
 				if (c != undefined){
 					this.place(c.id);
@@ -142,6 +151,7 @@ $(document).ready(function(){
 		return cursors[newId];
 	}
 
+	// When we move a cursor, we may need to create it.
 	OPERATIONS["moveCursor"] = function(cursorId, newLocation){
 		if (cursors[cursorId] == undefined){
 			cursors[cursorId] = createCursor(cursorId);
@@ -149,15 +159,14 @@ $(document).ready(function(){
 		cursors[cursorId].move(newLocation);
 	}
 
-	/* * * * * * * * * * *\
-	  ANCHORCHUNK + SETUP 
-	\* * * * * * * * * * */
+	  //////////////////////////
+	 //  ANCHORCHUNK + SETUP //
+	//////////////////////////
 
-	var FIRST_CHUNK_ID = undefined;
-	var CHUNKS = {};
-	var NEXT_CHUNK_ID = -1;
-	var SOCKET = undefined;
-	var CUSOR_NO = -1;
+	var anchorFirstChunkId = undefined;
+	var allChunks = {};
+	var nextChunkToCreate = -1;
+	var socketIOAPI = undefined;
 
 	function setup(){
 		var achoringChunk = createChunk(1);
@@ -171,11 +180,11 @@ $(document).ready(function(){
 		});
 
 		$.get("/user-number-plz/"+DOCUMENT_UUID, function(data){
-			CURSOR_NO = parseInt(data);
-			cursor = createCursor(CURSOR_NO);
+			myCursorId = parseInt(data);
+			cursor = createCursor(myCursorId);
 			cursor.place(1);
-	  		var minChunkId = 2 + 10000000 * CURSOR_NO;
-	  		NEXT_CHUNK_ID = minChunkId;
+	  		var minChunkId = 2 + 10000000 * myCursorId;
+	  		nextChunkToCreate = minChunkId;
 	  		$.get("/catchup-plz/"+DOCUMENT_UUID, function(data){
 	  			var listOfData = JSON.parse(data);
 	  			for (var i in listOfData){
@@ -210,21 +219,73 @@ $(document).ready(function(){
 			return false;
 		};
 
-		SOCKET = io();
+		socketIOAPI = io();
 
-		SOCKET.emit('joining', DOCUMENT_UUID);
+		socketIOAPI.emit('joining', DOCUMENT_UUID);
 
-		SOCKET.on('modification', function(msg){
+		socketIOAPI.on('modification', function(msg){
 			// console.log("RECIEVED-->"+msg);
 			PROCESS ( JSON.parse(msg) );
 		});
 
-		SOCKET.on('chat', function(msg){
+		socketIOAPI.on('chat', function(msg){
 			PROCESS ( JSON.parse(msg) );
+		});
+
+		  /////////////////////////////////////////
+		 // KEY LISTENERS + INPUT INTERRUPTIONS //
+	    /////////////////////////////////////////
+
+		$(window).keydown(function(e){
+			var c = e.which;
+			if (document.activeElement.tagName == "INPUT"){
+				if (c == 13) {
+					triggerMessageSend();
+				}
+			} else {
+				if (c == 8) {
+					removeChunkLocally();
+					e.preventDefault();
+				} else if (c == 13){
+					createNewChunkLocally(13);
+					createNewChunkLocally(-1);
+					e.preventDefault();
+				} else if (c == 9){
+					createNewChunkLocally(9);
+					e.preventDefault();
+				} else if (c == 37){
+					cursor.left();
+				} else if (c == 39){
+					cursor.right();
+				} else if (c == 38){
+					cursor.up();
+				} else if (c == 40){
+					cursor.down();
+				}
+			}
+		});
+
+		$(window).keypress(function(e){
+			var c = e.which;
+			if (document.activeElement.tagName != "INPUT"){
+				if (c >= 32 && c <= 126){
+					createNewChunkLocally(c);
+				}
+				if (c == 32){
+					e.preventDefault();
+				}
+			}
+			if (c == 8){
+				e.preventDefault();
+			}
 		});
 	}
 
 	OPERATIONS["setup"] = setup;
+
+	  /////////////////
+	 // CHUNK LOGIC //
+    /////////////////
 
 	function createNewChunk(afterChunk, char, newChunkId){
 		var newChunk = createChunk(newChunkId, afterChunk);
@@ -232,7 +293,7 @@ $(document).ready(function(){
 		var id = newChunk.id;
 		newChunk.content = char;
 		var newElement = newChunk.createElement();
-		$(CHUNKS[afterChunk].element).after(newElement);
+		$(allChunks[afterChunk].element).after(newElement);
 		newChunk.element = $("#chunk-" + id)[0];
 		$(newChunk.element).click(function(){
 			cursor.place(id);
@@ -255,7 +316,7 @@ $(document).ready(function(){
 			commandType: commandInsert(),
 			afterChunk: cursor.location,
 			content: character,
-			newChunkId: NEXT_CHUNK_ID++
+			newChunkId: nextChunkToCreate++
 		}
 
 		PROCESS(data);
@@ -270,7 +331,7 @@ $(document).ready(function(){
 	}
 
 	function removeChunk(chunkId){
-		var chunk = CHUNKS[chunkId];
+		var chunk = allChunks[chunkId];
 		var prev = chunk.previousChunk;
 		for (var curs in cursors){
 			if ($(chunk.element).hasClass("listening-"+curs)){
@@ -288,7 +349,7 @@ $(document).ready(function(){
 	function removeChunkLocally(){
 		if (cursor.location != 1){
 			
-			var isPlaceholder = CHUNKS[cursor.location].placeholder;
+			var isPlaceholder = allChunks[cursor.location].placeholder;
 			
 			var data = {
 				commandType: commandDelete(),
@@ -315,24 +376,24 @@ $(document).ready(function(){
 			}
 		};
 
-		CHUNKS[chunk.id] = chunk;
+		allChunks[chunk.id] = chunk;
 
-		if (previousChunkId == undefined || previousChunkId == null || FIRST_CHUNK_ID == undefined){
-			var oldFirstChunk = FIRST_CHUNK_ID;
-			FIRST_CHUNK_ID = chunk.id;
+		if (previousChunkId == undefined || previousChunkId == null || anchorFirstChunkId == undefined){
+			var oldFirstChunk = anchorFirstChunkId;
+			anchorFirstChunkId = chunk.id;
 			chunk.nextChunk = oldFirstChunk;
-			if (CHUNKS[oldFirstChunk] != undefined){
-				CHUNKS[oldFirstChunk].previousChunk = chunk.id;
+			if (allChunks[oldFirstChunk] != undefined){
+				allChunks[oldFirstChunk].previousChunk = chunk.id;
 			}
 			return chunk;
 		}
 
-		var prevChunk = CHUNKS[previousChunkId];
+		var prevChunk = allChunks[previousChunkId];
 		if (prevChunk === undefined){
 			throw "The chunk with id [" + previousChunkId + "] does not exist.";
 		}
 
-		var next = CHUNKS[prevChunk.nextChunk];
+		var next = allChunks[prevChunk.nextChunk];
 
 		chunk.previousChunk = prevChunk.id;
 		prevChunk.nextChunk = chunk.id;
@@ -346,31 +407,35 @@ $(document).ready(function(){
 	}
 
 	function deleteChunk (chunkId) {
-		var chunk = CHUNKS[chunkId];
+		var chunk = allChunks[chunkId];
 		if (chunk == undefined){
 			throw "The chunk with id [" + chunkId + "] does not exist.";
 		}
 
-		var prev = CHUNKS[chunk.previousChunk];
-		var next = CHUNKS[chunk.nextChunk];
+		var prev = allChunks[chunk.previousChunk];
+		var next = allChunks[chunk.nextChunk];
 
 		if (prev != undefined && next == undefined){
 			prev.nextChunk = undefined;
 		} else if (prev == undefined && next != undefined){
-			FIRST_CHUNK_ID = next.id;
+			anchorFirstChunkId = next.id;
 		} else if (prev != undefined && next != undefined){
 			prev.nextChunk = next.id;
 			next.previousChunk = prev.id;
 		}
-		delete CHUNKS[chunkId];
+		delete allChunks[chunkId];
 	}
 
-	var N_UNREAD_MESSAGES = 0;
+	  ////////////////
+	 // CHAT LOGIC //
+    ////////////////
+
+	var nUnreadMessages = 0;
 
 	function addChatMessage ( cursorId, message ){
 		var toAppend = '<div class="chat-message chat-message-'+cursorId+'">'+message+"</div>";
 		$(".chat-messages").first().append(toAppend);
-		N_UNREAD_MESSAGES ++;
+		nUnreadMessages ++;
 		updateUnreadMessages();
 	}
 
@@ -384,7 +449,7 @@ $(document).ready(function(){
 		};
 		SEND(data);
 		PROCESS(data);
-		N_UNREAD_MESSAGES = 0;
+		nUnreadMessages = 0;
 		updateUnreadMessages();
 	}
 
@@ -398,7 +463,7 @@ $(document).ready(function(){
 	}
 
 	function updateUnreadMessages(){
-		$(".chat-waiting").first().text(N_UNREAD_MESSAGES);
+		$(".chat-waiting").first().text(nUnreadMessages);
 	}
 
 	function toggleChatBox(){
@@ -408,9 +473,33 @@ $(document).ready(function(){
 		$(".chat-body").toggleClass("minimized");
 	}
 
+	  /////////////////////////////
+	 // DOWNLOAD IMPLEMENTATION //
+    /////////////////////////////
+
+	function getDocumentContentAsString(){
+		var result = "";
+		var current = anchorFirstChunkId;
+		while (current){
+			result = result + allChunks[current].content;
+			current = allChunks[current].nextChunk;
+		}
+		return result;
+	}
+
+	function redirectToDownloadPage(){
+		var content = getDocumentContentAsString();
+		var newUri = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+		window.open(newUri,'_blank');
+	}
+
+	  /////////////////////////////////////////////////
+	 // OPERATOR APPLICATIONS + COMMAND CONVENTIONS //
+    /////////////////////////////////////////////////
+
 	function SEND ( args ) {
 		args["docUuid"] = DOCUMENT_UUID;
-		SOCKET.emit('modification', JSON.stringify(args));
+		socketIOAPI.emit('modification', JSON.stringify(args));
 	}
 
 	function PROCESS ( args ) {
@@ -426,22 +515,6 @@ $(document).ready(function(){
 		}
 	}
 
-	function getContentAsString(){
-		var result = "";
-		var current = FIRST_CHUNK_ID;
-		while (current){
-			result = result + CHUNKS[current].content;
-			current = CHUNKS[current].nextChunk;
-		}
-		return result;
-	}
-
-	function redirectToDownloadPage(){
-		var content = getContentAsString();
-		var newUri = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
-		window.open(newUri,'_blank');
-	}
-
 	function commandInsert() { return 1; }
 	function commandIsInsert(commandType) { return (commandType == 1); }
 
@@ -455,49 +528,6 @@ $(document).ready(function(){
 	function commandIsChatMessage(commandType) { return (commandType == 4); }
 
 
-	$(window).keydown(function(e){
-		var c = e.which;
-		if (document.activeElement.tagName == "INPUT"){
-			if (c == 13) {
-				triggerMessageSend();
-			}
-		} else {
-			if (c == 8) {
-				removeChunkLocally();
-				e.preventDefault();
-			} else if (c == 13){
-				createNewChunkLocally(13);
-				createNewChunkLocally(-1);
-				e.preventDefault();
-			} else if (c == 9){
-				createNewChunkLocally(9);
-				e.preventDefault();
-			} else if (c == 37){
-				cursor.left();
-			} else if (c == 39){
-				cursor.right();
-			} else if (c == 38){
-				cursor.up();
-			} else if (c == 40){
-				cursor.down();
-			}
-		}
-	});
-
-	$(window).keypress(function(e){
-		var c = e.which;
-		if (document.activeElement.tagName != "INPUT"){
-			if (c >= 32 && c <= 126){
-				createNewChunkLocally(c);
-			}
-			if (c == 32){
-				e.preventDefault();
-			}
-		}
-		if (c == 8){
-			e.preventDefault();
-		}
-	});
-
+	// Begins the show!
 	setup();
 });
