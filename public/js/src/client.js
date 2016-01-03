@@ -10,12 +10,12 @@ $(document).ready(function(){
 	//////////////////
 
 	// The cursor that this user has been assigned.
-    var cursor = undefined;
+	var cursor = undefined;
 
 	// A dictionary describing all active cursors in the document.
-    var cursors = {};
-    
-    var cursorColors = [
+	var cursors = {};
+	
+	var cursorColors = [
 		"#000000", // Black
 		"#3F51B5", // Indigo
 		"#4CAF50", // Green
@@ -234,7 +234,7 @@ $(document).ready(function(){
 
 		  /////////////////////////////////////////
 		 // KEY LISTENERS + INPUT INTERRUPTIONS //
-	    /////////////////////////////////////////
+		/////////////////////////////////////////
 
 		$(window).keydown(function(e){
 			var c = e.which;
@@ -285,7 +285,7 @@ $(document).ready(function(){
 
 	  /////////////////
 	 // CHUNK LOGIC //
-    /////////////////
+	/////////////////
 
 	function createNewChunk(afterChunk, char, newChunkId){
 		var newChunk = createChunk(newChunkId, afterChunk);
@@ -428,7 +428,7 @@ $(document).ready(function(){
 
 	  ////////////////
 	 // CHAT LOGIC //
-    ////////////////
+	////////////////
 
 	var nUnreadMessages = 0;
 
@@ -475,7 +475,7 @@ $(document).ready(function(){
 
 	  /////////////////////////////
 	 // DOWNLOAD IMPLEMENTATION //
-    /////////////////////////////
+	/////////////////////////////
 
 	function getDocumentContentAsString(){
 		var result = "";
@@ -495,14 +495,48 @@ $(document).ready(function(){
 
 	  /////////////////////////////////////////////////
 	 // OPERATOR APPLICATIONS + COMMAND CONVENTIONS //
-    /////////////////////////////////////////////////
+	/////////////////////////////////////////////////
+
+	function lowBandwidthEncode ( args ){
+		var newArgs = [];
+		if (args['commandType']) newArgs['t'] = args['commandType'];
+		if (args['afterChunk']) newArgs['a'] = args['afterChunk'];
+		if (args['content']) newArgs['c'] = args['content'];
+		if (args['newChunkId']) newArgs['n'] = args['newChunkId'];
+		if (args['chunkDeleted']) newArgs['d'] = args['chunkDeleted'];
+		if (args['cursorId']) newArgs['i'] = args['cursorId'];
+		if (args['newLocation']) newArgs['l'] = args['newLocation'];
+		if (args['message']) newArgs['m'] = args['message'];
+		if (args['docUuid']) newArgs['u'] = args['docUuid'];
+		return newArgs;
+	}
+
+	function lowBandwidthDecode ( args ) {
+		if (args.commandType){
+			return args;
+		} else {
+			var newArgs = [];
+			if (args['t']) newArgs['commandType'] = args['t'];
+			if (args['a']) newArgs['afterChunk'] = args['a'];
+			if (args['c']) newArgs['content'] = args['c'];
+			if (args['n']) newArgs['newChunkId'] = args['n'];
+			if (args['d']) newArgs['chunkDeleted'] = args['d'];
+			if (args['i']) newArgs['cursorId'] = args['i'];
+			if (args['l']) newArgs['newLocation'] = args['l'];
+			if (args['m']) newArgs['message'] = args['m'];
+			if (args['u']) newArgs['docUuid'] = args['u'];
+			return newArgs;
+		}
+	}
 
 	function SEND ( args ) {
 		args["docUuid"] = DOCUMENT_UUID;
+		var encoded = lowBandwidthEncode(args);
 		socketIOAPI.emit('modification', JSON.stringify(args));
 	}
 
 	function PROCESS ( args ) {
+		args = lowBandwidthDecode(args);
 		var commandType = args["commandType"];
 		if (commandIsInsert(commandType)){
 			OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
