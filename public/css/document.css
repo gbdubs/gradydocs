@@ -274,3 +274,7 @@ span.chat-send-button.header:hover {
 .chat-toggle-tools > span.hidden {
     display: none;
 }
+
+#false-input{
+    display: none;
+}

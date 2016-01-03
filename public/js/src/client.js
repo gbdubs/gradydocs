@@ -279,6 +279,8 @@ $(document).ready(function(){
 				e.preventDefault();
 			}
 		});
+
+		$("#false-input").focus();
 	}
 
 	OPERATIONS["setup"] = setup;
