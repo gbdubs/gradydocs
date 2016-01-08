@@ -3,12 +3,51 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var MongoClient = require('mongodb').MongoClient,
-	assert = require('assert');
+assert = require('assert');
 
-var useDatabase = false;
-
+var useDatabase = true;
+var inProduction = true;
 // Database Connection URL (for local use only)
-var databaseUrl = 'mongodb://localhost:27017/myproject';
+
+var databaseUrl = undefined;
+if (inProduction){
+	databaseUrl = 'mongodb://54.165.164.79:27017/test';
+} else {
+	databaseUrl = 'mongodb://127.0.0.1:27017/test';
+}
+
+var database = undefined;
+function getDB(callback) {
+	if (database) {
+		return callback(database);
+	} else {
+		console.log("getDB : Attempting to get DB, with timeout 3s at "+timeStamp());
+		var options = {
+			server: {
+				socketOptions: {
+					keepAlive: true,
+					connectTimeoutMS: 3000
+				},
+				auto_reconnect: true
+			}
+		}
+
+		MongoClient.connect(databaseUrl, options, function(err, db) {
+			if (err) {
+				console.log("getDB: Error Connecting at "+timeStamp()+"{");
+				console.log("\t"+err);
+				console.log("}");
+				useDatabase = false;
+			} else {
+				database = db;
+				callback(database);
+				console.log("Successfully connected to database at " + databaseUrl);
+			}
+		});
+	}
+}
+
+getDB(function(){});
 
 var documentCursorIds = {};
 var loggedModifications = {};
@@ -79,13 +118,13 @@ function considerSavingDocument(docUuid) {
 }
 
 function saveDocument(docUuid) {
-	var data = {
-		userNumber: documentCursorIds[docUuid],
-		log: loggedModifications[docUuid]
-	}
+	getDB(function(db){
+		var data = {
+			userNumber: documentCursorIds[docUuid],
+			log: loggedModifications[docUuid]
+		}
 
-	MongoClient.connect(databaseUrl, function(err, db) {
-		assert.equal(null, err);
+		
 		var collection = db.collection('documents');
 		collection.update({
 			_id: docUuid
@@ -96,14 +135,12 @@ function saveDocument(docUuid) {
 		}, function(err, result) {
 			assert.equal(err, null);
 			console.log("Saved Document with id [" + docUuid + "] into the document collection.");
-			db.close();
 		});
 	});
 }
 
 function loadDocument(docUuid, callback) {
-	MongoClient.connect(databaseUrl, function(err, db) {
-		assert.equal(null, err);
+	getDB(function(db){
 		var collection = db.collection('documents');
 		collection.find({
 			_id: docUuid
@@ -119,8 +156,6 @@ function loadDocument(docUuid, callback) {
 			}
 
 			var resultingDocument = docs[0];
-
-			//db.close();
 
 			console.log("Successfully retrieved document " + (docs.length) + " with id: " + docUuid + ", and updated state vars.");
 			documentCursorIds[docUuid] = resultingDocument.userNumber;
@@ -195,6 +230,9 @@ io.on('connection', function(socket) {
 	socket.on('modification', function(msg) {
 		var parsed = JSON.parse(msg);
 		var docUuid = parsed.docUuid;
+		if (!docUuid){
+			docUuid = parsed.u;
+		}
 		logModification(docUuid, msg);
 		socket.broadcast.to(docUuid).emit('modification', msg);
 	});
@@ -204,3 +242,18 @@ io.on('connection', function(socket) {
 http.listen(8081, function() {
 	console.log('listening on *:8081');
 });
+
+function timeStamp() {
+	var now = new Date();
+	var date = [ now.getMonth() + 1, now.getDate(), now.getFullYear() ];
+	var time = [ now.getHours(), now.getMinutes(), now.getSeconds() ];
+	var suffix = ( time[0] < 12 ) ? "AM" : "PM";
+	time[0] = ( time[0] < 12 ) ? time[0] : time[0] - 12;
+	time[0] = time[0] || 12;
+	for ( var i = 1; i < 3; i++ ) {
+		if ( time[i] < 10 ) {
+			time[i] = "0" + time[i];
+		}
+	}
+	return date.join("/") + " " + time.join(":") + " " + suffix;
+}

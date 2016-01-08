@@ -500,16 +500,16 @@ $(document).ready(function(){
 	/////////////////////////////////////////////////
 
 	function lowBandwidthEncode ( args ){
-		var newArgs = [];
-		if (args['commandType']) newArgs['t'] = args['commandType'];
-		if (args['afterChunk']) newArgs['a'] = args['afterChunk'];
-		if (args['content']) newArgs['c'] = args['content'];
-		if (args['newChunkId']) newArgs['n'] = args['newChunkId'];
-		if (args['chunkDeleted']) newArgs['d'] = args['chunkDeleted'];
-		if (args['cursorId']) newArgs['i'] = args['cursorId'];
-		if (args['newLocation']) newArgs['l'] = args['newLocation'];
-		if (args['message']) newArgs['m'] = args['message'];
-		if (args['docUuid']) newArgs['u'] = args['docUuid'];
+		var newArgs = {};
+		if (args['commandType'] != undefined) newArgs['t'] = args['commandType'];
+		if (args['afterChunk'] != undefined) newArgs['a'] = args['afterChunk'];
+		if (args['content'] != undefined) newArgs['c'] = args['content'];
+		if (args['newChunkId'] != undefined) newArgs['n'] = args['newChunkId'];
+		if (args['chunkDeleted'] != undefined) newArgs['d'] = args['chunkDeleted'];
+		if (args['cursorId'] != undefined) newArgs['i'] = args['cursorId'];
+		if (args['newLocation'] != undefined) newArgs['l'] = args['newLocation'];
+		if (args['message'] != undefined) newArgs['m'] = args['message'];
+		if (args['docUuid'] != undefined) newArgs['u'] = args['docUuid'];
 		return newArgs;
 	}
 
@@ -517,16 +517,16 @@ $(document).ready(function(){
 		if (args.commandType){
 			return args;
 		} else {
-			var newArgs = [];
-			if (args['t']) newArgs['commandType'] = args['t'];
-			if (args['a']) newArgs['afterChunk'] = args['a'];
-			if (args['c']) newArgs['content'] = args['c'];
-			if (args['n']) newArgs['newChunkId'] = args['n'];
-			if (args['d']) newArgs['chunkDeleted'] = args['d'];
-			if (args['i']) newArgs['cursorId'] = args['i'];
-			if (args['l']) newArgs['newLocation'] = args['l'];
-			if (args['m']) newArgs['message'] = args['m'];
-			if (args['u']) newArgs['docUuid'] = args['u'];
+			var newArgs = {};
+			if (args['t'] != undefined) newArgs['commandType'] = args['t'];
+			if (args['a'] != undefined) newArgs['afterChunk'] = args['a'];
+			if (args['c'] != undefined) newArgs['content'] = args['c'];
+			if (args['n'] != undefined) newArgs['newChunkId'] = args['n'];
+			if (args['d'] != undefined) newArgs['chunkDeleted'] = args['d'];
+			if (args['i'] != undefined) newArgs['cursorId'] = args['i'];
+			if (args['l'] != undefined) newArgs['newLocation'] = args['l'];
+			if (args['m'] != undefined) newArgs['message'] = args['m'];
+			if (args['u'] != undefined) newArgs['docUuid'] = args['u'];
 			return newArgs;
 		}
 	}
@@ -534,7 +534,7 @@ $(document).ready(function(){
 	function SEND ( args ) {
 		args["docUuid"] = DOCUMENT_UUID;
 		var encoded = lowBandwidthEncode(args);
-		socketIOAPI.emit('modification', JSON.stringify(args));
+		socketIOAPI.emit('modification', JSON.stringify(encoded));
 	}
 
 	function PROCESS ( args ) {
