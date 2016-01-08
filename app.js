@@ -230,6 +230,9 @@ io.on('connection', function(socket) {
 	socket.on('modification', function(msg) {
 		var parsed = JSON.parse(msg);
 		var docUuid = parsed.docUuid;
+		if (!docUuid){
+			docUuid = parsed.u;
+		}
 		logModification(docUuid, msg);
 		socket.broadcast.to(docUuid).emit('modification', msg);
 	});
