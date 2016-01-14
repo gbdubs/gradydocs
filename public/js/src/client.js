@@ -1,10 +1,21 @@
+/*
+	You're doing everything in the ready state.  
+	Is there anything that could be done asynchronously,
+	while the document is loading?  The initial $.get, 
+	for instance?  Could this retrieve data, then wait 
+	till DOM ready to insert it?
+*/
 $(document).ready(function(){
+	"use strict";
 
 	var OPERATIONS = {};
 
+	var $window = $(window);
+	var myCursorId;
+
 	var currentUrl = window.location.href;
 	var DOCUMENT_UUID = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
-
+// Your section heading comments are cooler than mine.
 	  //////////////////
 	 // CURSOR LOGIC //
 	//////////////////
@@ -36,12 +47,13 @@ $(document).ready(function(){
 		var color = cursorColors[cursorId % cursorColors.length];
 		
 		// Adds styles to color how ever many cursors end up being in the document.
-		var css =   '.chunk.listening-'+cursorId+' { position: relative; padding-right: 2px; }\n'+
+// Maybe add some transparency to the cursor:
+		var css =   '.chunk.listening-'+cursorId+' { position: relative; }\n'+
 					'.chunk.listening-'+cursorId+':after { background-color: '+color+'; content: ""; position: absolute; display: inline-block; height: 100%; width: 2px; bottom: 0px; border-radius: 1px; }\n'+
 					'.chat-message-'+cursorId+' { background-color: '+color+'; }\n';
 		
 		// Adds styles if it is the current cursor.		
-		if (cursorId == myCursorId){
+		if (cursorId === myCursorId){
 			css += '.header{ background: ' + color + ' !important;}\n';
 			css += '.chunk.listening-'+cursorId+':after{ -webkit-animation: 1s blink step-end infinite;'+
 			'-moz-animation: 1s blink step-end infinite;'+
@@ -52,8 +64,8 @@ $(document).ready(function(){
 		}
 
 		// Appends the styles to the document.
-		head = document.head || document.getElementsByTagName('head')[0],
-		style = document.createElement('style');
+		var head = document.head || document.getElementsByTagName('head')[0],
+		var style = document.createElement('style');
 		style.type = 'text/css';
 		if (style.styleSheet){
 			style.styleSheet.cssText = css;
@@ -107,6 +119,11 @@ $(document).ready(function(){
 			},
 			up: function(){
 				var c = allChunks[this.location];
+// I wouldn't use jQuery for this.  I'd cache the elem the first time I looked it up:
+// c.element = c.element || document.getElementById(c.id);
+// Then use c.element.offsetLeft and c.element.offsetTop
+// If you tried to cache the jQuery object, on the other 
+// hand, you'd cause a big ol' drain on the RAM.
 				var leftCoord = $(c.element).position().left;
 				while (c.content != '\r' && c != undefined && c.previousChunk != undefined){ c = allChunks[c.previousChunk]; }
 				if (c == undefined){ return; }
@@ -236,7 +253,7 @@ $(document).ready(function(){
 		 // KEY LISTENERS + INPUT INTERRUPTIONS //
 		/////////////////////////////////////////
 
-		$(window).keydown(function(e){
+		$window.keydown(function(e){
 			var c = e.which;
 			if (document.activeElement.tagName == "INPUT"){
 				if (c == 13) {
@@ -265,7 +282,7 @@ $(document).ready(function(){
 			}
 		});
 
-		$(window).keypress(function(e){
+		$window.keypress(function(e){
 			var c = e.which;
 			if (document.activeElement.tagName != "INPUT"){
 				if (c >= 32 && c <= 126){
@@ -366,7 +383,7 @@ $(document).ready(function(){
 			}
 		}
 	}
-
+// This is a factory. Generally in JS, they're capitalized, and I end my var names with the word 'Factory,' because I'm anal and wordy.
 	function createChunk (newId, previousChunkId) {
 		var chunk = {
 			id: newId,
@@ -540,6 +557,14 @@ $(document).ready(function(){
 	function PROCESS ( args ) {
 		args = lowBandwidthDecode(args);
 		var commandType = args["commandType"];
+/* 
+	Rather than an if statement for each of these, why not pass an index of 
+	OPERATIONS as the args["commandType"] and access the desired method with 
+	the following?
+		OPERATIONS[commandType](args)
+	You'd need to do the parsing of args in each of OPERATIONS' methods, but
+	you'd save up to 8 operations.
+*/
 		if (commandIsInsert(commandType)){
 			OPERATIONS.insert(args.afterChunk, args.content, args.newChunkId);
 		} else if (commandIsDelete(commandType)){
@@ -567,3 +592,13 @@ $(document).ready(function(){
 	// Begins the show!
 	setup();
 });
+
+/* 
+    I would recommend breaking this into discreet commonJs modules, 
+    and using Browserify to compile. This would mean attaching each 
+    externally accessed method to an object, and concluding your file
+    with a `module.exports = yourObjectName`.  
+
+    This makes unit tests and documentation easier, and is a relief 
+    for future developers.  It also lets me organize my components.
+ */
