@@ -5,7 +5,8 @@ var io = require('socket.io')(http);
 var MongoClient = require('mongodb').MongoClient,
 assert = require('assert');
 
-var useDatabase = true;
+// Shuttering the DB, it was taking too much CPU time.
+var useDatabase = false;
 var inProduction = true;
 // Database Connection URL (for local use only)
 
